@@ -1,5 +1,12 @@
 spring:
+
   datasource:
     url: jdbc:mysql://localhost:3306/ascent-dev
     username: ascent-dev
     password: ascent-dev
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ascent-dev
