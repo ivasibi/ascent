@@ -1,4 +1,5 @@
 spring:
+
   profiles:
     active: '@spring.profiles.active@'
 
@@ -6,3 +7,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: update
+
+  session:
+    store-type: redis
