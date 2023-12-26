@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+    <div th:fragment="success">
+        <div class="bg-success rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-check"></i>
+            <span class="ms-1">Success!</span>
+        </div>
+    </div>
+
+    <div th:fragment="invalid_credentials">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="ms-1">Invalid credentials!</span>
+        </div>
+    </div>
+
+    <div th:fragment="user_disabled">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="ms-1">User disabled!</span>
+        </div>
+    </div>
+
+    <div th:fragment="error">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="ms-1">Error!</span>
+        </div>
+    </div>
+
+</html>

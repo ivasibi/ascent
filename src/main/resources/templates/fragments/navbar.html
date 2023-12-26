@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+    <div th:fragment="navbar">
+
+        <script th:src="@{/js/navbar.js}" defer></script>
+
+        <nav class="navbar sticky-top bg-dark">
+            <div class="container-fluid">
+                <button type="button" class="btn btn-dark text-light me-auto" data-bs-toggle="offcanvas" data-bs-target="#menu_offcanvas">
+                    <i class="fa-solid fa-bars"></i>
+                    <span class="ms-1 d-none d-sm-inline">Menu</span>
+                </button>
+
+                <div th:if="${logged}">
+                    <button type="button" class="btn btn-outline-danger text-light ms-auto" data-bs-toggle="modal" data-bs-target="#logout_modal">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="ms-1 d-none d-sm-inline">Logout</span>
+                    </button>
+                </div>
+
+                <div th:unless="${logged}">
+                    <button type="button" class="btn btn-outline-success text-light ms-auto" data-bs-toggle="modal" data-bs-target="#login_modal">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span class="ms-1 d-none d-sm-inline">Login</span>
+                    </button>
+
+                    <button type="button" class="btn btn-outline-primary text-light ms-2" data-bs-toggle="modal" data-bs-target="#register_modal">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="ms-1 d-none d-sm-inline">Register</span>
+                    </button>
+                </div>
+
+            </div>
+        </nav>
+
+        <div th:insert="~{fragments/navbar/menu :: menu}"></div>
+
+        <div th:if="${logged}">
+            <div th:insert="~{fragments/navbar/logout :: logout}"></div>
+        </div>
+
+        <div th:unless="${logged}">
+            <div th:insert="~{fragments/navbar/login :: login}"></div>
+            <div th:insert="~{fragments/navbar/register :: register}"></div>
+        </div>
+    </div>
+
+</html>

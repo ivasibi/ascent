@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+
+    <div th:fragment="logout">
+
+        <script th:src="@{/js/navbar/logout.js}" defer></script>
+
+        <div class="modal fade" id="logout_modal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header bg-danger">
+                        <h4 class="text-light pt-2">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <span class="ms-2">Logout</span>
+                        </h4>
+                        <button type="button" class="btn btn-danger ms-auto" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div hx-ext="response-targets">
+                        <form id="logout_form" hx-get="/logout" hx-swap="innerHTML"
+                              hx-target="#logout_response" hx-target-error="#logout_error">
+
+                            <div class="modal-body bg-dark text-light">
+                                Are you sure you want to logout?
+
+                                <div id="logout_response"></div>
+                                <div id="logout_error"></div>
+                            </div>
+
+                            <div class="modal-footer bg-dark">
+                                <i class="fa-solid fa-circle-notch fa-spin text-light htmx-indicator ms-auto"></i>
+
+                                <button type="submit" class="btn btn-danger ms-2">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                    <span class="ms-1">Logout</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</html>

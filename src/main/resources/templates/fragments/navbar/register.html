@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+    <div th:fragment="register">
+
+        <script th:src="@{/js/navbar/register.js}" defer></script>
+
+        <div class="modal fade" id="register_modal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header bg-primary">
+                        <h4 class="text-light pt-2">
+                            <i class="fa-solid fa-user"></i>
+                            <span class="ms-2">Register</span>
+                        </h4>
+                        <button type="button" class="btn btn-primary ms-auto" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div hx-ext="json-enc, response-targets">
+                        <form id="register_form" hx-post="/register" hx-swap="innerHTML"
+                              hx-target="#register_response" hx-target-error="#register_error">
+
+                            <div class="modal-body bg-dark text-light">
+                                <label for="register_username" class="form-label ms-1">
+                                    <i class="fa-solid fa-user"></i>
+                                    <span class="ms-1">Username</span>
+                                </label>
+                                <input class="form-control bg-dark text-light mb-1" type="text" id="register_username" name="username" required>
+
+                                <label for="register_email" class="form-label ms-1">
+                                    <i class="fa-solid fa-envelope"></i>
+                                    <span class="ms-1">Email</span>
+                                </label>
+                                <input class="form-control bg-dark text-light mb-1" type="email" id="register_email" name="email" required>
+
+                                <label for="register_password" class="form-label ms-1">
+                                    <i class="fa-solid fa-key"></i>
+                                    <span class="ms-1">Password</span>
+                                </label>
+                                <input class="form-control bg-dark text-light" type="password" id="register_password" name="password" required>
+
+                                <div id="register_response"></div>
+                                <div id="register_error"></div>
+                            </div>
+
+                            <div class="modal-footer bg-dark">
+                                <i class="fa-solid fa-circle-notch fa-spin text-light htmx-indicator ms-auto"></i>
+
+                                <button type="submit" class="btn btn-primary ms-2">
+                                    <i class="fa-solid fa-user"></i>
+                                    <span class="ms-1">Register</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+
+    <div th:fragment="success">
+        <div class="bg-success rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-check"></i>
+            <span class="ms-1">Success!</span>
+        </div>
+    </div>
+
+    <div th:fragment="username_already_in_use">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span th:text="'Username is already in use!'" class="ms-1"></span>
+        </div>
+    </div>
+
+    <div th:fragment="email_already_in_use">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span th:text="'Email is already in use!'" class="ms-1"></span>
+        </div>
+    </div>
+
+    <div th:fragment="error">
+        <div class="bg-danger rounded text-light mt-3 p-2">
+            <i class="fa-solid fa-xmark"></i>
+            <span class="ms-1">Error!</span>
+        </div>
+    </div>
+
+</html>

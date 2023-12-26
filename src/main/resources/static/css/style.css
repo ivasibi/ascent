@@ -1,0 +1,15 @@
+.modal {
+    --bs-modal-border-width: 0 !important;
+    --bs-modal-header-border-width: 0 !important;
+    --bs-modal-header-border-color: var(--bs-dark) !important;
+    --bs-modal-footer-border-width: 0 !important;
+    --bs-modal-footer-border-color: var(--bs-dark) !important;
+}
+
+.modal-body {
+    padding-bottom: 0 !important;
+}
+
+.form-control {
+    border: var(--bs-light) 1px solid !important;
+}
