@@ -85,7 +85,7 @@ public class RegisterIntegrationTest {
         userRepository.deleteAll();
     }
 
-    private static Stream<Arguments> callWithNewUserReturnsCreatedAndSuccessAndSavesUser() {
+    private static Stream<Arguments> callWithNonExistingUserReturnsCreatedAndSuccessAndSavesUser() {
         return Stream.of(
                 arguments("username2", "username2@email.com", "password2"),
                 arguments("username3", "username3@email.com", "password3"),
@@ -96,7 +96,7 @@ public class RegisterIntegrationTest {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithNewUserReturnsCreatedAndSuccessAndSavesUser(String username, String email, String password) throws Exception {
+    public void callWithNonExistingUserReturnsCreatedAndSuccessAndSavesUser(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
 
@@ -141,7 +141,7 @@ public class RegisterIntegrationTest {
         );
     }
 
-    private static Stream<Arguments> callWithUsedUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser() {
+    private static Stream<Arguments> callWithExistingUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser() {
         return Stream.of(
                 arguments("username", "username2@email.com", "password"),
                 arguments("username", "username2@email.com", "password2"),
@@ -152,7 +152,7 @@ public class RegisterIntegrationTest {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithUsedUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
+    public void callWithExistingUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
 
@@ -181,7 +181,7 @@ public class RegisterIntegrationTest {
         );
     }
 
-    private static Stream<Arguments> callWithUsedEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser() {
+    private static Stream<Arguments> callWithExistingEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser() {
         return Stream.of(
             arguments("username2", "username@email.com", "password"),
             arguments("username2", "username@email.com", "password2"),
@@ -192,7 +192,7 @@ public class RegisterIntegrationTest {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithUsedEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
+    public void callWithExistingEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
 
