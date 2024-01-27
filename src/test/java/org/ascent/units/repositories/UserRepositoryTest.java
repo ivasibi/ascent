@@ -1,7 +1,8 @@
-package org.ascent.repositories;
+package org.ascent.units.repositories;
 
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
+import org.ascent.repositories.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -1,7 +1,8 @@
-package org.ascent.managers;
+package org.ascent.units.managers;
 
 import org.ascent.exceptions.EmailAlreadyInUseException;
 import org.ascent.exceptions.UsernameAlreadyInUseException;
+import org.ascent.managers.RegisterManager;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.RegisterRequest;
 import org.junit.jupiter.api.Test;

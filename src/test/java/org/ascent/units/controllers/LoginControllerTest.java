@@ -1,10 +1,11 @@
-package org.ascent.controllers;
+package org.ascent.units.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ascent.exceptions.EmailAlreadyInUseException;
-import org.ascent.exceptions.UsernameAlreadyInUseException;
-import org.ascent.managers.RegisterManager;
-import org.ascent.requests.RegisterRequest;
+import org.ascent.controllers.LoginController;
+import org.ascent.exceptions.InvalidCredentialsException;
+import org.ascent.exceptions.UserDisabledException;
+import org.ascent.managers.LoginManager;
+import org.ascent.requests.LoginRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -28,144 +29,144 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @AutoConfigureWebMvc
 @AutoConfigureMockMvc
-public class RegisterControllerTest {
+public class LoginControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Mock
-    private RegisterManager mockRegisterManager;
+    private LoginManager mockLoginManager;
 
     @BeforeEach
     public void beforeEach() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new RegisterController(mockRegisterManager)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new LoginController(mockLoginManager)).build();
     }
 
     @Test
     public void callWithoutHTMXHeaderReturnsNotFound() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void callWithGetHTTPMethodReturnsMethodNotAllowed() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                get("/register")
+                get("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void callWithUrlEncodedMediaTypeReturnsUnsupportedMediaType() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+        LoginRequest loginRequest = new LoginRequest();
 
-        String registerRequestString = registerRequest.toString();
-        String registerRequestUrlEncoded = URLEncoder.encode(registerRequestString, StandardCharsets.UTF_8);
+        String loginRequestString = loginRequest.toString();
+        String loginRequestUrlEncoded = URLEncoder.encode(loginRequestString, StandardCharsets.UTF_8);
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .content(registerRequestUrlEncoded))
+                        .content(loginRequestUrlEncoded))
                 .andDo(print())
                 .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
-    public void callWithoutExceptionThrownReturnsCreatedAndSuccess() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+    public void callWithoutExceptionThrownReturnsOkAndSuccess() throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: success"));
+                .andExpect(view().name("responses/login_response :: success"));
     }
 
     @Test
-    public void callWithUsernameAlreadyInUseExceptionThrownReturnsConflictAndUsernameAlreadyInUse() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+    public void callWithInvalidCredentialsExceptionThrownReturnsUnauthorizedAndInvalidCredentials() throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        doThrow(new UsernameAlreadyInUseException()).when(mockRegisterManager).register(any());
+        doThrow(new InvalidCredentialsException()).when(mockLoginManager).login(any(), any());
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnauthorized())
                 .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: username_already_in_use"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException));
+                .andExpect(view().name("responses/login_response :: invalid_credentials"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException));
     }
 
     @Test
-    public void callWithEmailAlreadyInUseExceptionThrownReturnsConflictAndEmailAlreadyInUse() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+    public void callWithUserDisabledExceptionThrownReturnsUnauthorizedAndUserDisabled() throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        doThrow(new EmailAlreadyInUseException()).when(mockRegisterManager).register(any());
+        doThrow(new UserDisabledException()).when(mockLoginManager).login(any(), any());
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnauthorized())
                 .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: email_already_in_use"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException));
+                .andExpect(view().name("responses/login_response :: user_disabled"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException));
     }
 
     @Test
     public void callWithRuntimeExceptionThrownReturnsInternalServerErrorAndError() throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
+        LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        doThrow(new RuntimeException()).when(mockRegisterManager).register(any());
+        doThrow(new RuntimeException()).when(mockLoginManager).login(any(), any());
 
         mockMvc.perform(
-                post("/register")
+                post("/login")
                         .header("HX-Request", true)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        .content(loginRequestJson))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: error"))
+                .andExpect(view().name("responses/login_response :: error"))
                 .andExpect(result -> assertNotNull(result.getResolvedException()));
     }
 }

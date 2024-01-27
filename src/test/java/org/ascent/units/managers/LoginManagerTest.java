@@ -1,9 +1,10 @@
-package org.ascent.managers;
+package org.ascent.units.managers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.ascent.entities.User;
 import org.ascent.exceptions.InvalidCredentialsException;
 import org.ascent.exceptions.UserDisabledException;
+import org.ascent.managers.LoginManager;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.LoginRequest;
 import org.junit.jupiter.api.Test;
