@@ -4,8 +4,7 @@ import org.ascent.exceptions.EmailAlreadyInUseException;
 import org.ascent.exceptions.UsernameAlreadyInUseException;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.RegisterRequest;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,18 +21,9 @@ public class RegisterManagerTest {
     @Mock
     private UserRepository mockUserRepository;
 
-    @ParameterizedTest
-    @CsvSource({
-            "username, username2@email.com, password",
-            "username, username2@email.com, password2",
-            "username, username3@email.com, password2",
-            "username, username3@email.com, password3"
-    })
-    public void requestWithUsedUsernameThrowsUsernameAlreadyInUseException(String username, String email, String password) {
+    @Test
+    public void requestWithExistingUsernameThrowsUsernameAlreadyInUseException() {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
 
         when(mockUserRepository.existsByUsername(any())).thenReturn(true);
 
@@ -41,36 +31,19 @@ public class RegisterManagerTest {
                 () -> registerManager.register(registerRequest));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2",
-            "username2, username2@email.com, password3",
-            "username2, username3@email.com, password3",
-            "username3, username3@email.com, password3"
-    })
-    public void requestWithUnusedUsernameDoesNotThrowException(String username, String email, String password) {
+    @Test
+    public void requestWithNonExistingUsernameDoesNotThrowException() {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
+        registerRequest.setPassword("password");
 
         when(mockUserRepository.existsByUsername(any())).thenReturn(false);
 
         assertDoesNotThrow(() -> registerManager.register(registerRequest));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username@email.com, password",
-            "username2, username@email.com, password2",
-            "username3, username@email.com, password2",
-            "username3, username@email.com, password3"
-    })
-    public void requestWithUsedEmailThrowsEmailAlreadyInUseException(String username, String email, String password) {
+    @Test
+    public void requestWithExistingEmailThrowsEmailAlreadyInUseException() {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
 
         when(mockUserRepository.existsByEmail(any())).thenReturn(true);
 
@@ -78,36 +51,28 @@ public class RegisterManagerTest {
                 () -> registerManager.register(registerRequest));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2",
-            "username2, username2@email.com, password3",
-            "username2, username3@email.com, password3",
-            "username3, username3@email.com, password3"
-    })
-    public void requestWithUnusedEmailDoesNotThrowException(String username, String email, String password) {
+    @Test
+    public void requestWithNonExistingEmailDoesNotThrowException() {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
+        registerRequest.setPassword("password");
 
         when(mockUserRepository.existsByEmail(any())).thenReturn(false);
 
         assertDoesNotThrow(() -> registerManager.register(registerRequest));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2",
-            "username2, username2@email.com, password3",
-            "username2, username3@email.com, password3",
-            "username3, username3@email.com, password3"
-    })
-    public void requestWithCreatedUserSavesUser(String username, String email, String password) {
+    @Test
+    public void requestWithNullPasswordThrowsIllegalArgumentException() {
         RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registerManager.register(registerRequest));
+    }
+
+    @Test
+    public void requestWithoutExceptionThrownSavesUser() {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setPassword("password");
 
         registerManager.register(registerRequest);
 

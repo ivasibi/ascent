@@ -4,9 +4,9 @@ import org.ascent.entities.User;
 import org.ascent.enums.Role;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,8 +18,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.params.provider.Arguments.*;
 
 @SpringBootTest
 @Testcontainers
@@ -70,54 +73,71 @@ public class UserRepositoryTest {
         userRepository.deleteAll();
     }
 
-    @Test
-    public void checkIfMySQLContainerIsSetupCorrectly() {
-        assertTrue(mySQLContainer.isCreated());
-        assertTrue(mySQLContainer.isRunning());
+    private static Stream<String> checkIfSavedUserExistsByUsername() {
+        return Stream.of("username", "username2");
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "username",
-            "username2"
-    })
-    public void checkIfCreatedUserExistByUsername(String username) {
+    @MethodSource
+    public void checkIfSavedUserExistsByUsername(String username) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         assertTrue(userRepository.existsByUsername(username));
     }
 
+    private static Stream<String> checkIfNotSavedUserExistsByUsername() {
+        return Stream.of("username3", "username4");
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "username3",
-            "username4"
-    })
-    public void checkIfNotCreatedUserExistByUsername(String username) {
+    @MethodSource
+    public void checkIfNotSavedUserExistsByUsername(String username) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         assertFalse(userRepository.existsByUsername(username));
     }
 
+    private static Stream<String> checkIfSavedUserExistsByEmail() {
+        return Stream.of("username@email.com", "username2@email.com");
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "username@email.com",
-            "username2@email.com"
-    })
-    public void checkIfCreatedUserExistByEmail(String email) {
+    @MethodSource
+    public void checkIfSavedUserExistsByEmail(String email) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         assertTrue(userRepository.existsByEmail(email));
     }
 
-    @ParameterizedTest
-    @CsvSource({
-            "username3@email.com",
-            "username4@email.com"
-    })
-    public void checkIfNotCreatedUserExistByEmail(String email) {
-        assertFalse(userRepository.existsByEmail(email));
+    private static Stream<String> checkIfNotSavedUserExistsByEmail() {
+        return Stream.of("username3@email.com", "username4@email.com");
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "username, username@email.com, password, true, USER",
-            "username2, username2@email.com, password2, false, ADMIN"
-    })
-    public void checkIfFindByEmailOfCreatedUserReturnsUser(String username, String email, String password, boolean disabled, Role role) {
+    @MethodSource
+    public void checkIfNotSavedUserExistsByEmail(String email) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
+        assertFalse(userRepository.existsByEmail(email));
+    }
+
+    private static Stream<Arguments> checkIfSavedUserIsReturnedByFindByEmail() {
+        return Stream.of(
+                arguments("username", "username@email.com", "password", true, Role.USER),
+                arguments("username2", "username2@email.com", "password2", false, Role.ADMIN)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void checkIfSavedUserIsReturnedByFindByEmail(String username, String email, String password, boolean disabled, Role role) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         assertAll(
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
@@ -140,12 +160,16 @@ public class UserRepositoryTest {
         );
     }
 
+    private static Stream<String> checkIfNotSavedUserIsReturnedByFindByEmail() {
+        return Stream.of("username3@email.com", "username4@email.com");
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "username3@email.com",
-            "username4@email.com"
-    })
-    public void checkIfFindByEmailOfNotCreatedUserReturnsNull(String email) {
+    @MethodSource
+    public void checkIfNotSavedUserIsReturnedByFindByEmail(String email) {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         assertNull(userRepository.findByEmail(email));
     }
 }

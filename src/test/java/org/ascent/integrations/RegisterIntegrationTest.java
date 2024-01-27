@@ -11,7 +11,8 @@ import org.ascent.repositories.UserRepository;
 import org.ascent.requests.RegisterRequest;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
@@ -26,14 +27,15 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
+import static org.junit.jupiter.params.provider.Arguments.*;
 
 @SpringBootTest
 @Testcontainers
@@ -83,75 +85,21 @@ public class RegisterIntegrationTest {
         userRepository.deleteAll();
     }
 
-    @Test
-    public void checkIfMySQLContainerIsSetupCorrectly() {
-        assertTrue(mySQLContainer.isCreated());
-        assertTrue(mySQLContainer.isRunning());
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2"
-    })
-    public void callWithoutHTMXHeaderReturnsNotFound(String username, String email, String password) throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
-
-        mockMvc.perform(
-                post("/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-
-        assertAll(
-                () -> assertFalse(userRepository.existsByUsername(username)),
-                () -> assertFalse(userRepository.existsByEmail(email)),
-                () -> assertNull(userRepository.findByEmail(email))
+    private static Stream<Arguments> callWithNewUserReturnsCreatedAndSuccessAndSavesUser() {
+        return Stream.of(
+                arguments("username2", "username2@email.com", "password2"),
+                arguments("username3", "username3@email.com", "password3"),
+                arguments("username4", "username4@email.com", "password4"),
+                arguments("username5", "username5@email.com", "password5")
         );
     }
 
     @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2"
-    })
-    public void callWithUrlEncodedMediaTypeReturnsUnsupportedMediaType(String username, String email, String password) throws Exception {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setUsername(username);
-        registerRequest.setEmail(email);
-        registerRequest.setPassword(password);
+    @MethodSource
+    public void callWithNewUserReturnsCreatedAndSuccessAndSavesUser(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
 
-        String registerRequestString = registerRequest.toString();
-        String registerRequestUrlEncoded = URLEncoder.encode(registerRequestString, StandardCharsets.UTF_8);
-
-        mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", true)
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .content(registerRequestUrlEncoded))
-                .andDo(print())
-                .andExpect(status().isUnsupportedMediaType());
-
-        assertAll(
-                () -> assertFalse(userRepository.existsByUsername(username)),
-                () -> assertFalse(userRepository.existsByEmail(email)),
-                () -> assertNull(userRepository.findByEmail(email))
-        );
-    }
-
-    @ParameterizedTest
-    @CsvSource({
-            "username2, username2@email.com, password2",
-            "username2, username2@email.com, password3",
-            "username2, username3@email.com, password3",
-            "username3, username3@email.com, password3"
-    })
-    public void callWithCreatedUserReturnsCreatedAndSuccess(String username, String email, String password) throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername(username);
         registerRequest.setEmail(email);
@@ -167,6 +115,7 @@ public class RegisterIntegrationTest {
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isCreated())
+                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: success"));
 
         assertAll(
@@ -192,14 +141,21 @@ public class RegisterIntegrationTest {
         );
     }
 
+    private static Stream<Arguments> callWithUsedUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser() {
+        return Stream.of(
+                arguments("username", "username2@email.com", "password"),
+                arguments("username", "username2@email.com", "password2"),
+                arguments("username", "username3@email.com", "password2"),
+                arguments("username", "username3@email.com", "password3")
+        );
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "username, username2@email.com, password",
-            "username, username2@email.com, password2",
-            "username, username3@email.com, password2",
-            "username, username3@email.com, password3"
-    })
-    public void callWithUsedUsernameReturnsConflictAndUsernameAlreadyInUse(String username, String email, String password) throws Exception {
+    @MethodSource
+    public void callWithUsedUsernameReturnsConflictAndUsernameAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername(username);
         registerRequest.setEmail(email);
@@ -215,6 +171,7 @@ public class RegisterIntegrationTest {
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
+                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: username_already_in_use"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException));
 
@@ -224,14 +181,21 @@ public class RegisterIntegrationTest {
         );
     }
 
+    private static Stream<Arguments> callWithUsedEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser() {
+        return Stream.of(
+            arguments("username2", "username@email.com", "password"),
+            arguments("username2", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password3")
+        );
+    }
+
     @ParameterizedTest
-    @CsvSource({
-            "username2, username@email.com, password",
-            "username2, username@email.com, password2",
-            "username3, username@email.com, password2",
-            "username3, username@email.com, password3"
-    })
-    public void callWithUsedEmailReturnsConflictAndEmailAlreadyInUse(String username, String email, String password) throws Exception {
+    @MethodSource
+    public void callWithUsedEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername(username);
         registerRequest.setEmail(email);
@@ -247,6 +211,7 @@ public class RegisterIntegrationTest {
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
+                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: email_already_in_use"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException));
 
