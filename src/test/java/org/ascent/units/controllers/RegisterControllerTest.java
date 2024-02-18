@@ -8,11 +8,14 @@ import org.ascent.managers.RegisterManager;
 import org.ascent.requests.RegisterRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -66,7 +69,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 get("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
@@ -82,7 +85,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                         .content(registerRequestUrlEncoded))
                 .andDo(print())
@@ -98,7 +101,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
@@ -118,7 +121,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
@@ -139,7 +142,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
@@ -160,7 +163,7 @@ public class RegisterControllerTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
@@ -168,5 +171,29 @@ public class RegisterControllerTest {
                 .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: error"))
                 .andExpect(result -> assertNotNull(result.getResolvedException()));
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    public void callWithRuntimeExceptionThrownLogsError(CapturedOutput capturedOutput) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        doThrow(new RuntimeException("RuntimeException")).when(mockRegisterManager).register(any());
+
+        mockMvc.perform(
+                post("/register")
+                        .header("HX-Request", "true")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(registerRequestJson))
+                .andDo(print());
+
+        assertAll(
+                () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
+                () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.RegisterController")),
+                () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+        );
     }
 }

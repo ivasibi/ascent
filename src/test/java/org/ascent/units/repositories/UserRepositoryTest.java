@@ -1,5 +1,6 @@
 package org.ascent.units.repositories;
 
+import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
 import org.ascent.repositories.UserRepository;
@@ -9,13 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,22 +20,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
-@SpringBootTest
-@Testcontainers
-public class UserRepositoryTest {
+public class UserRepositoryTest extends ContainerEnvironment {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Container
-    public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8");
-
-    @DynamicPropertySource
-    public static void mySqlProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
-        dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
-        dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
-    }
 
     @BeforeEach
     public void beforeEach() {
@@ -61,7 +44,7 @@ public class UserRepositoryTest {
         user2.setPassword(bCryptPasswordEncoder.encode("password2"));
         user2.setDisabled(false);
         user2.setRole(Role.ADMIN);
-        user2.setCreatedOn(Instant.now().minus(10, ChronoUnit.MINUTES));
+        user2.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
         user2.setLastLogin(Instant.now());
 
         userRepository.save(user);

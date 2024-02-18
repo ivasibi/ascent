@@ -1,31 +1,24 @@
 package org.ascent.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.ascent.controllers.RegisterController;
+import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
 import org.ascent.exceptions.EmailAlreadyInUseException;
 import org.ascent.exceptions.UsernameAlreadyInUseException;
-import org.ascent.managers.RegisterManager;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.RegisterRequest;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
 import java.util.stream.Stream;
@@ -37,47 +30,34 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
-@SpringBootTest
-@Testcontainers
-@AutoConfigureWebMvc
-@AutoConfigureMockMvc
-public class RegisterIntegrationTest {
+public class RegisterIntegrationTest extends ContainerEnvironment {
+
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private RegisterManager registerManager;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Container
-    public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8");
-
-    @DynamicPropertySource
-    public static void mySqlProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
-        dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
-        dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
-    }
 
     @BeforeEach
     public void beforeEach() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
         User user = new User();
         user.setUsername("username");
         user.setEmail("username@email.com");
-
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         user.setPassword(bCryptPasswordEncoder.encode("password"));
-
+        user.setDisabled(false);
         user.setRole(Role.USER);
         user.setCreatedOn(Instant.now());
+        user.setLastLogin(null);
 
         userRepository.save(user);
         userRepository.flush();
-
-        mockMvc = MockMvcBuilders.standaloneSetup(new RegisterController(registerManager)).build();
     }
 
     @AfterEach
@@ -110,13 +90,15 @@ public class RegisterIntegrationTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: success"));
+                .andExpect(view().name("responses/register_response :: success"))
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
 
         assertAll(
                 () -> assertTrue(userRepository.existsByUsername(username)),
@@ -166,14 +148,16 @@ public class RegisterIntegrationTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: username_already_in_use"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException));
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Username is already in use!</span>")));
 
         assertAll(
                 () -> assertFalse(userRepository.existsByEmail(email)),
@@ -183,10 +167,10 @@ public class RegisterIntegrationTest {
 
     private static Stream<Arguments> callWithExistingEmailReturnsConflictAndEmailAlreadyInUseAndDoesNotSaveUser() {
         return Stream.of(
-            arguments("username2", "username@email.com", "password"),
-            arguments("username2", "username@email.com", "password2"),
-            arguments("username3", "username@email.com", "password2"),
-            arguments("username3", "username@email.com", "password3")
+                arguments("username2", "username@email.com", "password"),
+                arguments("username2", "username@email.com", "password2"),
+                arguments("username3", "username@email.com", "password2"),
+                arguments("username3", "username@email.com", "password3")
         );
     }
 
@@ -206,17 +190,17 @@ public class RegisterIntegrationTest {
 
         mockMvc.perform(
                 post("/register")
-                        .header("HX-Request", true)
+                        .header("HX-Request", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: email_already_in_use"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException));
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Email is already in use!</span>")));
 
-        assertAll(
-                () -> assertFalse(userRepository.existsByUsername(username))
-        );
+        assertFalse(userRepository.existsByUsername(username));
     }
 }
