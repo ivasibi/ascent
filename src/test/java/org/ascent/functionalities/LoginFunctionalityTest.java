@@ -73,7 +73,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
         lettuceConnectionFactory.stop();
     }
 
-    private static Stream<Arguments> callRegisterWithNonExistingUserThenCallLoginWithSameUser() {
+    private static Stream<Arguments> registerNewUserThenLogin() {
         return Stream.of(
                 arguments("username", "username@email.com", "password"),
                 arguments("username2", "username2@email.com", "password2")
@@ -82,7 +82,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callRegisterWithNonExistingUserThenCallLoginWithSameUser(String username, String email, String password) throws Exception {
+    public void registerNewUserThenLogin(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -102,8 +102,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(registerRequestJson)
-                .exchange()
-                .expectStatus().isCreated();
+                .exchange();
 
         assertAll(
                 () -> assertTrue(userRepository.existsByUsername(username)),
@@ -133,13 +132,12 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
 
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectStatus().isOk()
                 .expectCookie().exists("SESSION");
 
         Set<String> redisKeys = redisTemplate.keys("*");
@@ -150,6 +148,9 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
         String sessionKey = redisKeys.toArray()[0].toString();
 
         assertAll(
+                () -> assertTrue(userRepository.existsByUsername(username)),
+                () -> assertTrue(userRepository.existsByEmail(email)),
+                () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(

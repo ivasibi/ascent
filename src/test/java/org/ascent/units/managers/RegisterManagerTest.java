@@ -1,5 +1,6 @@
 package org.ascent.units.managers;
 
+import org.ascent.entities.User;
 import org.ascent.exceptions.EmailAlreadyInUseException;
 import org.ascent.exceptions.UsernameAlreadyInUseException;
 import org.ascent.managers.RegisterManager;
@@ -24,59 +25,59 @@ public class RegisterManagerTest {
 
     @Test
     public void requestWithExistingUsernameThrowsUsernameAlreadyInUseException() {
-        RegisterRequest registerRequest = new RegisterRequest();
+        RegisterRequest mockRegisterRequest = mock();
 
         when(mockUserRepository.existsByUsername(any())).thenReturn(true);
 
         assertThrows(UsernameAlreadyInUseException.class,
-                () -> registerManager.register(registerRequest));
+                () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
     public void requestWithNonExistingUsernameDoesNotThrowException() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setPassword("password");
+        RegisterRequest mockRegisterRequest = mock();
+        when(mockRegisterRequest.getPassword()).thenReturn("password");
 
-        when(mockUserRepository.existsByUsername(any())).thenReturn(false);
+        when(mockUserRepository.existsByUsername(anyString())).thenReturn(false);
 
-        assertDoesNotThrow(() -> registerManager.register(registerRequest));
+        assertDoesNotThrow(() -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
     public void requestWithExistingEmailThrowsEmailAlreadyInUseException() {
-        RegisterRequest registerRequest = new RegisterRequest();
+        RegisterRequest mockRegisterRequest = mock();
 
         when(mockUserRepository.existsByEmail(any())).thenReturn(true);
 
         assertThrows(EmailAlreadyInUseException.class,
-                () -> registerManager.register(registerRequest));
+                () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
     public void requestWithNonExistingEmailDoesNotThrowException() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setPassword("password");
+        RegisterRequest mockRegisterRequest = mock();
+        when(mockRegisterRequest.getPassword()).thenReturn("password");
 
-        when(mockUserRepository.existsByEmail(any())).thenReturn(false);
+        when(mockUserRepository.existsByEmail(anyString())).thenReturn(false);
 
-        assertDoesNotThrow(() -> registerManager.register(registerRequest));
+        assertDoesNotThrow(() -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
-    public void requestWithNullPasswordThrowsIllegalArgumentException() {
-        RegisterRequest registerRequest = new RegisterRequest();
+    public void requestWithoutPasswordThrowsIllegalArgumentException() {
+        RegisterRequest mockRegisterRequest = mock();
 
         assertThrows(IllegalArgumentException.class,
-                () -> registerManager.register(registerRequest));
+                () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
     public void requestWithoutExceptionThrownSavesUser() {
-        RegisterRequest registerRequest = new RegisterRequest();
-        registerRequest.setPassword("password");
+        RegisterRequest mockRegisterRequest = mock();
+        when(mockRegisterRequest.getPassword()).thenReturn("password");
 
-        registerManager.register(registerRequest);
+        registerManager.register(mockRegisterRequest);
 
-        verify(mockUserRepository, times(1)).save(any());
+        verify(mockUserRepository, times(1)).save(any(User.class));
     }
 }

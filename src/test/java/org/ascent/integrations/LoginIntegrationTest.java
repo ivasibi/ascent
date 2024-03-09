@@ -124,7 +124,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         lettuceConnectionFactory.stop();
     }
 
-    private static Stream<Arguments> callWithExistingUserReturnsOkAndSuccessAndUpdatesUser() {
+    private static Stream<Arguments> callWithExistingUserReturnsOkAndSuccess() {
         return Stream.of(
                 arguments("username@email.com", "password"),
                 arguments("username2@email.com", "password2")
@@ -133,12 +133,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithExistingUserReturnsOkAndSuccessAndUpdatesUser(String email, String password) throws Exception {
-        assumeTrue(mySQLContainer.isCreated());
-        assumeTrue(mySQLContainer.isRunning());
-
-        Instant lastLogin = userRepository.findByEmail(email).getLastLogin();
-
+    public void callWithExistingUserReturnsOkAndSuccess(String email, String password) throws Exception {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(email);
         loginRequest.setPassword(password);
@@ -147,33 +142,112 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                post("/login")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestJson))
+                        post("/login")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginRequestJson))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(model().size(0))
                 .andExpect(view().name("responses/login_response :: success"))
                 .andExpect(content().contentType("text/html;charset=UTF-8"))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
+    }
 
-        assertAll(
-                () -> {
-                    User user = userRepository.findByEmail(email);
-                    assertAll(
-                            () -> assertNotEquals(lastLogin, user.getLastLogin()),
-                            () -> {
-                                if (lastLogin != null) {
-                                    assertTrue(lastLogin.isBefore(user.getLastLogin()));
-                                }
-                            }
-                    );
-                }
+    private static Stream<Arguments> callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials() {
+        return Stream.of(
+                arguments("username4@email.com", "password4"),
+                arguments("username5@email.com", "password5"),
+                arguments("username6@email.com", "password6")
         );
     }
 
-    private static Stream<Arguments> callWithExistingUserReturnsOkAndSuccessAndSessionAndUpdatesUser() {
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        mockMvc.perform(
+                        post("/login")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginRequestJson))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(model().size(0))
+                .andExpect(view().name("responses/login_response :: invalid_credentials"))
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
+    }
+
+    private static Stream<Arguments> callWithDisabledUserReturnsUnauthorizedAndDisabledUser() {
+        return Stream.of(
+                arguments("username3@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithDisabledUserReturnsUnauthorizedAndDisabledUser(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        mockMvc.perform(
+                        post("/login")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginRequestJson))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(model().size(0))
+                .andExpect(view().name("responses/login_response :: user_disabled"))
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">User disabled!</span>")));
+    }
+
+    private static Stream<Arguments> callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentials() {
+        return Stream.of(
+                arguments("username@email.com", "password2"),
+                arguments("username2@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentials(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        mockMvc.perform(
+                        post("/login")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(loginRequestJson))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(model().size(0))
+                .andExpect(view().name("responses/login_response :: invalid_credentials"))
+                .andExpect(content().contentType("text/html;charset=UTF-8"))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
+    }
+
+    private static Stream<Arguments> callWithExistingUserReturnsSessionAndUpdatesUser() {
         return Stream.of(
                 arguments("username@email.com", "password"),
                 arguments("username2@email.com", "password2")
@@ -182,7 +256,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithExistingUserReturnsOkAndSuccessAndSessionAndUpdatesUser(String email, String password) throws Exception {
+    public void callWithExistingUserReturnsSessionAndUpdatesUser(String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -203,7 +277,6 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectStatus().isOk()
                 .expectCookie().exists("SESSION");
 
         Set<String> redisKeys = redisTemplate.keys("*");
@@ -214,6 +287,8 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String sessionKey = redisKeys.toArray()[0].toString();
 
         assertAll(
+                () -> assertTrue(userRepository.existsByEmail(email)),
+                () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(
@@ -249,12 +324,11 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                                 }
                             }
                     );
-
                 }
         );
     }
 
-    private static Stream<Arguments> callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials() {
+    private static Stream<Arguments> callWithNonExistingUserReturnsNoSession() {
         return Stream.of(
                 arguments("username4@email.com", "password4"),
                 arguments("username5@email.com", "password5"),
@@ -264,42 +338,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials(String email, String password) throws Exception {
-        assumeTrue(mySQLContainer.isCreated());
-        assumeTrue(mySQLContainer.isRunning());
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(email);
-        loginRequest.setPassword(password);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
-
-        mockMvc.perform(
-                post("/login")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: invalid_credentials"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
-    }
-
-    private static Stream<Arguments> callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentialsAndNoSession() {
-        return Stream.of(
-                arguments("username4@email.com", "password4"),
-                arguments("username5@email.com", "password5"),
-                arguments("username6@email.com", "password6")
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    public void callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentialsAndNoSession(String email, String password) throws Exception {
+    public void callWithNonExistingUserReturnsNoSession(String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -314,20 +353,23 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         webTestClient.post()
                 .uri("/login")
-                .header("HX-Request", "true")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(loginRequestJson)
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
                 .exchange()
-                .expectStatus().isUnauthorized()
                 .expectCookie().doesNotExist("SESSION");
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
         assumeTrue(redisKeys != null);
-        assertTrue(redisKeys.isEmpty());
+        assertAll(
+                () -> assertFalse(userRepository.existsByEmail(email)),
+                () -> assertNull(userRepository.findByEmail(email)),
+                () -> assertTrue(redisKeys.isEmpty())
+        );
     }
 
-    private static Stream<Arguments> callWithDisabledUserReturnsUnauthorizedAndDisabledUserAndDoesNotUpdateUser() {
+    private static Stream<Arguments> callWithDisabledUserReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
                 arguments("username3@email.com", "password3")
         );
@@ -335,45 +377,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithDisabledUserReturnsUnauthorizedAndDisabledUserAndDoesNotUpdateUser(String email, String password) throws Exception {
-        assumeTrue(mySQLContainer.isCreated());
-        assumeTrue(mySQLContainer.isRunning());
-
-        Instant lastLogin = userRepository.findByEmail(email).getLastLogin();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(email);
-        loginRequest.setPassword(password);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
-
-        mockMvc.perform(
-                post("/login")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: user_disabled"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">User disabled!</span>")));
-
-        User user = userRepository.findByEmail(email);
-        assertEquals(lastLogin, user.getLastLogin());
-    }
-
-    private static Stream<Arguments> callWithDisabledUserReturnsUnauthorizedAndDisabledUserAndNoSessionAndDoesNotUpdateUser() {
-        return Stream.of(
-                arguments("username3@email.com", "password3")
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    public void callWithDisabledUserReturnsUnauthorizedAndDisabledUserAndNoSessionAndDoesNotUpdateUser(String email, String password) throws Exception {
+    public void callWithDisabledUserReturnsNoSessionAndDoesNotUpdateUser(String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -394,13 +398,14 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectStatus().isUnauthorized()
                 .expectCookie().doesNotExist("SESSION");
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
         assumeTrue(redisKeys != null);
         assertAll(
+                () -> assertTrue(userRepository.existsByEmail(email)),
+                () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(
@@ -411,7 +416,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         );
     }
 
-    private static Stream<Arguments> callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentialsAndDoesNotUpdateUser() {
+    private static Stream<Arguments> callWithNonMatchingPasswordReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
                 arguments("username@email.com", "password2"),
                 arguments("username2@email.com", "password3")
@@ -420,46 +425,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @ParameterizedTest
     @MethodSource
-    public void callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentialsAndDoesNotUpdateUser(String email, String password) throws Exception {
-        assumeTrue(mySQLContainer.isCreated());
-        assumeTrue(mySQLContainer.isRunning());
-
-        Instant lastLogin = userRepository.findByEmail(email).getLastLogin();
-
-        LoginRequest loginRequest = new LoginRequest();
-        loginRequest.setEmail(email);
-        loginRequest.setPassword(password);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
-
-        mockMvc.perform(
-                post("/login")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: invalid_credentials"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
-
-        User user = userRepository.findByEmail(email);
-        assertEquals(lastLogin, user.getLastLogin());
-    }
-
-    private static Stream<Arguments> callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentialsAndNoSessionAndDoesNotUpdateUser() {
-        return Stream.of(
-                arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3")
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource
-    public void callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentialsAndNoSessionAndDoesNotUpdateUser(String email, String password) throws Exception {
+    public void callWithNonMatchingPasswordReturnsNoSessionAndDoesNotUpdateUser(String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -480,13 +446,14 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectStatus().isUnauthorized()
                 .expectCookie().doesNotExist("SESSION");
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
         assumeTrue(redisKeys != null);
         assertAll(
+                () -> assertTrue(userRepository.existsByEmail(email)),
+                () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(

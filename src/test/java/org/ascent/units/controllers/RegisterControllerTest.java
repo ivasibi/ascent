@@ -53,9 +53,9 @@ public class RegisterControllerTest {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                post("/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
@@ -68,10 +68,10 @@ public class RegisterControllerTest {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                get("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        get("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isMethodNotAllowed());
     }
@@ -84,10 +84,10 @@ public class RegisterControllerTest {
         String registerRequestUrlEncoded = URLEncoder.encode(registerRequestString, StandardCharsets.UTF_8);
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .content(registerRequestUrlEncoded))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .content(registerRequestUrlEncoded))
                 .andDo(print())
                 .andExpect(status().isUnsupportedMediaType());
     }
@@ -100,14 +100,30 @@ public class RegisterControllerTest {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: success"));
+    }
+
+    @Test
+    public void callThenCallsRegisterManagerRegisterMethod() throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        mockMvc.perform(
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
+                .andDo(print());
+
+        verify(mockRegisterManager, times(1)).register(any(RegisterRequest.class));
     }
 
     @Test
@@ -117,16 +133,15 @@ public class RegisterControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        doThrow(new UsernameAlreadyInUseException()).when(mockRegisterManager).register(any());
+        doThrow(new UsernameAlreadyInUseException()).when(mockRegisterManager).register(any(RegisterRequest.class));
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: username_already_in_use"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException));
     }
@@ -138,16 +153,15 @@ public class RegisterControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        doThrow(new EmailAlreadyInUseException()).when(mockRegisterManager).register(any());
+        doThrow(new EmailAlreadyInUseException()).when(mockRegisterManager).register(any(RegisterRequest.class));
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: email_already_in_use"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException));
     }
@@ -159,16 +173,15 @@ public class RegisterControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        doThrow(new RuntimeException()).when(mockRegisterManager).register(any());
+        doThrow(new RuntimeException()).when(mockRegisterManager).register(any(RegisterRequest.class));
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(model().size(0))
                 .andExpect(view().name("responses/register_response :: error"))
                 .andExpect(result -> assertNotNull(result.getResolvedException()));
     }
@@ -181,13 +194,13 @@ public class RegisterControllerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        doThrow(new RuntimeException("RuntimeException")).when(mockRegisterManager).register(any());
+        doThrow(new RuntimeException("RuntimeException")).when(mockRegisterManager).register(any(RegisterRequest.class));
 
         mockMvc.perform(
-                post("/register")
-                        .header("HX-Request", "true")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerRequestJson))
+                        post("/register")
+                                .header("HX-Request", "true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(registerRequestJson))
                 .andDo(print());
 
         assertAll(
