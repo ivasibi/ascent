@@ -19,11 +19,15 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
@@ -245,6 +249,215 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .andExpect(content().contentType("text/html;charset=UTF-8"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
+    }
+
+    private static Stream<Arguments> callWithExistingUserReturnsView() {
+        return Stream.of(
+                arguments("username@email.com", "password"),
+                arguments("username2@email.com", "password2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingUserReturnsView(String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(String.class).getResponseCookies();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(200, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseCookies);
+                    assertEquals(1, responseCookies.size());
+                    assertTrue(responseCookies.containsKey("SESSION"));
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+                }
+        );
+    }
+
+    private static Stream<Arguments> callWithNonExistingUserReturnsView() {
+        return Stream.of(
+                arguments("username4@email.com", "password4"),
+                arguments("username5@email.com", "password5"),
+                arguments("username6@email.com", "password6")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonExistingUserReturnsView(String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(String.class).getResponseCookies();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(401, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseCookies);
+                    assertEquals(0, responseCookies.size());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
+                }
+        );
+    }
+
+    private static Stream<Arguments> callWithDisabledUserReturnsView() {
+        return Stream.of(
+                arguments("username3@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithDisabledUserReturnsView(String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(String.class).getResponseCookies();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(401, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseCookies);
+                    assertEquals(0, responseCookies.size());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">User disabled!</span>"));
+                }
+        );
+    }
+
+    private static Stream<Arguments> callWithNonMatchingPasswordReturnsView() {
+        return Stream.of(
+                arguments("username@email.com", "password2"),
+                arguments("username2@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonMatchingPasswordReturnsView(String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(String.class).getResponseCookies();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(401, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseCookies);
+                    assertEquals(0, responseCookies.size());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
+                }
+        );
     }
 
     private static Stream<Arguments> callWithExistingUserReturnsSessionAndUpdatesUser() {

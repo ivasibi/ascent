@@ -14,6 +14,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -169,6 +171,150 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
                 .andExpect(content().contentType("text/html;charset=UTF-8"))
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Email is already in use!</span>")));
+    }
+
+    private static Stream<Arguments> callWithNonExistingUserReturnsView() {
+        return Stream.of(
+                arguments("username2", "username2@email.com", "password2"),
+                arguments("username3", "username3@email.com", "password3"),
+                arguments("username4", "username4@email.com", "password4"),
+                arguments("username5", "username5@email.com", "password5")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonExistingUserReturnsView(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(registerRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(201, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+                }
+        );
+    }
+
+    private static Stream<Arguments> callWithExistingUsernameReturnsView() {
+        return Stream.of(
+                arguments("username", "username2@email.com", "password"),
+                arguments("username", "username2@email.com", "password2"),
+                arguments("username", "username3@email.com", "password2"),
+                arguments("username", "username3@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingUsernameReturnsView(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(registerRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(409, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Username is already in use!</span>"));
+                }
+        );
+    }
+
+    private static Stream<Arguments> callWithExistingEmailReturnsView() {
+        return Stream.of(
+                arguments("username2", "username@email.com", "password"),
+                arguments("username2", "username@email.com", "password2"),
+                arguments("username3", "username@email.com", "password2"),
+                arguments("username3", "username@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingEmailReturnsView(String username, String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(registerRequestJson)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(409, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Email is already in use!</span>"));
+                }
+        );
     }
 
     private static Stream<Arguments> callWithNonExistingUserSavesUser() {

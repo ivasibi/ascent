@@ -19,6 +19,8 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -130,6 +132,92 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
                 .andExpect(view().name("responses/logout_response :: success"))
                 .andExpect(content().contentType("text/html;charset=UTF-8"))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
+    }
+
+    private static Stream<Arguments> callWithSessionReturnsView() {
+        return Stream.of(
+                arguments("username@email.com", "password"),
+                arguments("username2@email.com", "password2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithSessionReturnsView(String email, String password) throws Exception {
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange();
+
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
+
+        assumeTrue(responseCookies.size() == 1);
+
+        String sessionCookie = responseCookies.get("SESSION").get(0).getValue();
+
+        responseSpec = webTestClient.get()
+                .uri("/logout")
+                    .header("HX-Request", "true")
+                    .cookie("SESSION", sessionCookie)
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(200, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+                }
+        );
+    }
+
+    @Test
+    public void callWithoutSessionReturnsView() {
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
+                .uri("/logout")
+                    .header("HX-Request", "true")
+                    .cookie("SESSION", "session")
+                .exchange();
+
+        HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
+        HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
+        String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
+
+        assertAll(
+                () -> assertEquals(200, responseStatusCode.value()),
+                () -> {
+                    Object contentType = responseHeaders.get("Content-Type");
+                    assertNotNull(contentType);
+                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+                },
+                () -> {
+                    assertNotNull(responseBody);
+                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+                }
+        );
     }
 
     private static Stream<Arguments> callWithSessionInvalidatesSession() {
