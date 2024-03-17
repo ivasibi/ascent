@@ -1,16 +1,15 @@
 server:
-
   port: 8080
-
+  servlet:
+    session:
+      cookie:
+        name: AC-SESSION
 spring:
-
   profiles:
     active: '@spring.profiles.active@'
-
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: update
-
   session:
     store-type: redis
