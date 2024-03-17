@@ -295,7 +295,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 () -> {
                     assertNotNull(responseCookies);
                     assertEquals(1, responseCookies.size());
-                    assertTrue(responseCookies.containsKey("SESSION"));
+                    assertTrue(responseCookies.containsKey(sessionCookieName));
                 },
                 () -> {
                     assertNotNull(responseBody);
@@ -490,7 +490,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().exists("SESSION");
+                .expectCookie().exists(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
@@ -570,7 +570,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().doesNotExist("SESSION");
+                .expectCookie().doesNotExist(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
@@ -611,7 +611,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().doesNotExist("SESSION");
+                .expectCookie().doesNotExist(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
@@ -659,7 +659,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().doesNotExist("SESSION");
+                .expectCookie().doesNotExist(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 

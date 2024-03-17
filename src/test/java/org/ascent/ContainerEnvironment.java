@@ -15,6 +15,8 @@ public abstract class ContainerEnvironment {
 
     public final static String serverPort = "8081";
 
+    public final static String sessionCookieName = "AC-SESSION";
+
     private final static String mySQLImage = "mysql:8";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
@@ -35,6 +37,7 @@ public abstract class ContainerEnvironment {
     @DynamicPropertySource
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
+        dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
 
         dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());

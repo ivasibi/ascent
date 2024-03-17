@@ -138,7 +138,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().exists("SESSION");
+                .expectCookie().exists(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 

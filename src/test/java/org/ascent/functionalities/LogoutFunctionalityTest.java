@@ -141,7 +141,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
-                .expectCookie().exists("SESSION");
+                .expectCookie().exists(sessionCookieName);
 
         Set<String> redisKeys = redisTemplate.keys("*");
 
@@ -192,12 +192,12 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         assumeTrue(responseCookies.size() == 1);
 
-        String sessionCookie = responseCookies.get("SESSION").get(0).getValue();
+        String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         webTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
-                    .cookie("SESSION", sessionCookie)
+                    .cookie(sessionCookieName, sessionCookie)
                 .exchange();
 
         redisKeys = redisTemplate.keys("*");

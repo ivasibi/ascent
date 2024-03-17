@@ -211,11 +211,11 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         assumeTrue(responseCookies.size() == 1);
 
-        String sessionCookie = responseCookies.get("SESSION").get(0).getValue();
+        String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         responseSpec = webTestClient.get()
                 .uri("/")
-                    .cookie("SESSION", sessionCookie)
+                    .cookie(sessionCookieName, sessionCookie)
                 .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
@@ -243,7 +243,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         WebTestClient.ResponseSpec responseSpec = webTestClient.get()
                 .uri("/")
-                    .cookie("SESSION", "session")
+                    .cookie(sessionCookieName, "session")
                 .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
@@ -358,11 +358,11 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         assumeTrue(responseCookies.size() == 1);
 
-        String sessionCookie = responseCookies.get("SESSION").get(0).getValue();
+        String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         responseSpec = webTestClient.get()
                 .uri("/navbar")
-                    .cookie("SESSION", sessionCookie)
+                    .cookie(sessionCookieName, sessionCookie)
                 .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
@@ -390,7 +390,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         WebTestClient.ResponseSpec responseSpec = webTestClient.get()
                 .uri("/navbar")
-                    .cookie("SESSION", "session")
+                    .cookie(sessionCookieName, "session")
                 .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
