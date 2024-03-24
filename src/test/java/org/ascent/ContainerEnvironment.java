@@ -13,6 +13,10 @@ import org.testcontainers.containers.MySQLContainer;
 @AutoConfigureMockMvc
 public abstract class ContainerEnvironment {
 
+    public final static String serverProtocol = "http://";
+
+    public final static String serverIp = "localhost";
+
     public final static String serverPort = "8081";
 
     public final static String sessionCookieName = "AC-SESSION";

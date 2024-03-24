@@ -44,7 +44,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
     @BeforeEach
     public void beforeEach() {
-        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + serverPort).build();
+        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIp + ":" + serverPort).build();
 
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(redisContainer.getHost());

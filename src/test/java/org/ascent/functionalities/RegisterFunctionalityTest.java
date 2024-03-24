@@ -31,7 +31,7 @@ public class RegisterFunctionalityTest extends ContainerEnvironment {
 
     @BeforeEach
     public void beforeEach() {
-        webTestClient = WebTestClient.bindToServer().baseUrl("http://localhost:" + serverPort).build();
+        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIp + ":" + serverPort).build();
     }
 
     @AfterEach
