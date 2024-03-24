@@ -63,7 +63,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIp + ":" + serverPort).build();
+        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
