@@ -43,6 +43,7 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
 
+        dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
         dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
         dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
