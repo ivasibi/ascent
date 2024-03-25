@@ -21,6 +21,8 @@ public abstract class ContainerEnvironment {
 
     public final static String sessionCookieName = "AC-SESSION";
 
+    public final static String sessionNamespace = "ascent";
+
     private final static String mySQLImage = "mysql:8";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
@@ -50,6 +52,7 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
 
         dynamicPropertyRegistry.add("spring.session.store-type", () -> "redis");
+        dynamicPropertyRegistry.add("spring.session.redis.namespace", () -> sessionNamespace);
         dynamicPropertyRegistry.add("spring.data.redis.host", () -> redisContainer.getHost());
         dynamicPropertyRegistry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
         dynamicPropertyRegistry.add("spring.data.redis.password", () -> redisPassword);

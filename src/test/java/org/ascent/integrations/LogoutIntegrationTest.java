@@ -248,10 +248,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assumeTrue(redisKeys.size() == 1);
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
@@ -265,10 +265,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
                     .cookie(sessionCookieName, sessionCookie)
                 .exchange();
 
-        redisKeys = redisTemplate.keys("*");
+        redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assertTrue(redisKeys.isEmpty());
+        assumeTrue(redisSessionKeys != null);
+        assertTrue(redisSessionKeys.isEmpty());
     }
 
     private static Stream<Arguments> callWithoutSessionDoesNotInvalidateSession() {
@@ -299,10 +299,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assumeTrue(redisKeys.size() == 1);
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
 
         webTestClient.get()
                 .uri("/logout")
@@ -310,9 +310,9 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
                     .cookie(sessionCookieName, "session")
                 .exchange();
 
-        redisKeys = redisTemplate.keys("*");
+        redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assertFalse(redisKeys.isEmpty());
+        assumeTrue(redisSessionKeys != null);
+        assertFalse(redisSessionKeys.isEmpty());
     }
 }

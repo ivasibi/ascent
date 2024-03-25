@@ -492,12 +492,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assumeTrue(redisKeys.size() == 1);
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
 
-        String sessionKey = redisKeys.toArray()[0].toString();
+        String sessionKey = redisSessionKeys.toArray()[0].toString();
 
         assertAll(
                 () -> assertTrue(userRepository.existsByEmail(email)),
@@ -572,13 +572,13 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
+        assumeTrue(redisSessionKeys != null);
         assertAll(
                 () -> assertFalse(userRepository.existsByEmail(email)),
                 () -> assertNull(userRepository.findByEmail(email)),
-                () -> assertTrue(redisKeys.isEmpty())
+                () -> assertTrue(redisSessionKeys.isEmpty())
         );
     }
 
@@ -613,16 +613,16 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
+        assumeTrue(redisSessionKeys != null);
         assertAll(
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(
-                            () -> assertTrue(redisKeys.isEmpty()),
+                            () -> assertTrue(redisSessionKeys.isEmpty()),
                             () -> assertEquals(lastLogin, user.getLastLogin())
                     );
                 }
@@ -661,16 +661,16 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionsKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
+        assumeTrue(redisSessionsKeys != null);
         assertAll(
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
                     User user = userRepository.findByEmail(email);
                     assertAll(
-                            () -> assertTrue(redisKeys.isEmpty()),
+                            () -> assertTrue(redisSessionsKeys.isEmpty()),
                             () -> assertEquals(lastLogin, user.getLastLogin())
                     );
                 }

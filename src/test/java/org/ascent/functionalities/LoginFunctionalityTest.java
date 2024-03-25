@@ -140,12 +140,12 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
 
-        Set<String> redisKeys = redisTemplate.keys("*");
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisKeys != null);
-        assumeTrue(redisKeys.size() == 1);
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
 
-        String sessionKey = redisKeys.toArray()[0].toString();
+        String sessionKey = redisSessionKeys.toArray()[0].toString();
 
         assertAll(
                 () -> assertTrue(userRepository.existsByUsername(username)),
