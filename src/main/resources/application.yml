@@ -13,3 +13,5 @@ spring:
       ddl-auto: update
   session:
     store-type: redis
+    redis:
+      namespace: ascent
