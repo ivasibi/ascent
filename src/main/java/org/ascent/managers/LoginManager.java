@@ -45,7 +45,7 @@ public class LoginManager {
 
         httpSession = httpServletRequest.getSession(true);
 
-        httpSession.setMaxInactiveInterval(600);
+        httpSession.setMaxInactiveInterval(30 * 60);
         httpSession.setAttribute("logged", true);
         httpSession.setAttribute("username", user.getUsername());
         httpSession.setAttribute("role", user.getRole());
