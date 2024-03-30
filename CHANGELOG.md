@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.5] - [UNRELEASED]
+
+### Changed
+
+- [ :package: ] Bump `Spring Boot` from 3.2.3 to 3.2.4 ([`5d99cd5c`](https://github.com/ivasibi/ascent/commit/5d99cd5c))
+
 ## [0.0.4] - 2024-03-30 [UNRELEASED]
 
 ### Added
