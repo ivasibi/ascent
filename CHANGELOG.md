@@ -1,36 +1,60 @@
 # Changelog
 
+## [0.0.4] - 2024-03-30 [UNRELEASED]
+
+### Added
+
+- [:test_tube:] Add `Session Timeout` test ([`2d484336`](https://github.com/ivasibi/ascent/commit/2d484336))
+- [:test_tube:] Add `Server Protocol` and `Server IP` parameters ([`91f0ad4f`](https://github.com/ivasibi/ascent/commit/91f0ad4f))
+
+### Changed
+
+- [:rocket:] Set `Session Timeout` to `30m` ([`43481805`](https://github.com/ivasibi/ascent/commit/43481805))
+- [:test_tube:] Set `Session Namespace` parameter ([`d32cde10`](https://github.com/ivasibi/ascent/commit/d32cde10))
+- [:rocket:] Set `ascent:sessions` as `Session Namespace` ([`0723413d`](https://github.com/ivasibi/ascent/commit/0723413d))
+- [:test_tube:] Set `Session Cookie` parameter ([`f772c41c`](https://github.com/ivasibi/ascent/commit/f772c41c))
+- [:rocket:] Set `AC-SESSION` as `Session Cookie` ([`3ed7b7a5`](https://github.com/ivasibi/ascent/commit/3ed7b7a5))
+- [:package:] Bump `HTMX` from 1.9.9 to 1.9.10 ([`4c47bfef`](https://github.com/ivasibi/ascent/commit/4c47bfef))
+- [:package:] Bump `Bootstrap` from 5.3.2 to 5.3.3 ([`9598708b`](https://github.com/ivasibi/ascent/commit/9598708b))
+- [:package:] Bump `Testcontainers` from 1.19.3 to 1.19.7 ([`4137ca5f`](https://github.com/ivasibi/ascent/commit/4137ca5f))
+- [:package:] Bump `Spring Boot` from 3.2.1 to 3.2.3 ([`38c5a78f`](https://github.com/ivasibi/ascent/commit/38c5a78f))
+
 ## [0.0.3] - 2024-03-16 [UNRELEASED]
 
 ### Added
 
-- Add `Unit`, `Integration` and `Functionality` tests
-- Add `Testcontainers` 1.19.3 ([`31e2efbd`](https://github.com/ivasibi/ascent/commit/31e2efbd))
+- [:test_tube:] Add `Unit`, `Integration` and `Functionality` tests
+- [:package:] Add `Testcontainers` 1.19.3 ([`31e2efbd`](https://github.com/ivasibi/ascent/commit/31e2efbd))
 
 ### Changed
 
-- Bump `HTMX` from 1.9.8 to 1.9.9 ([`e343e125`](https://github.com/ivasibi/ascent/commit/e343e125))
-- Bump `Font Awesome` from 6.4.2 to 6.5.1 ([`30b0ac88`](https://github.com/ivasibi/ascent/commit/30b0ac88))
-- Bump `Spring Boot` from 3.1.5 to 3.2.1 ([`a4e692bb`](https://github.com/ivasibi/ascent/commit/a4e692bb))
+- [:package:] Bump `HTMX` from 1.9.8 to 1.9.9 ([`e343e125`](https://github.com/ivasibi/ascent/commit/e343e125))
+- [:package:] Bump `Font Awesome` from 6.4.2 to 6.5.1 ([`30b0ac88`](https://github.com/ivasibi/ascent/commit/30b0ac88))
+- [:package:] Bump `Spring Boot` from 3.1.5 to 3.2.1 ([`a4e692bb`](https://github.com/ivasibi/ascent/commit/a4e692bb))
 
 ### Removed
 
-- Remove `JUnit Params` 5.10.1 ([`bbb28909`](https://github.com/ivasibi/ascent/commit/bbb28909))
+- [:package:] Remove `JUnit Params` 5.10.1 ([`bbb28909`](https://github.com/ivasibi/ascent/commit/bbb28909))
 
 ## [0.0.2] - 2023-12-26 [UNRELEASED]
 
 ### Added
 
-- Add `Authentication` ([`47365e93`](https://github.com/ivasibi/ascent/commit/47365e93))
-- Add `HTMX` 1.9.8
-- Add `Font Awesome` 6.4.2
-- Add `Bootstrap` 5.3.2
-- Add `Thymeleaf` 3.1.5 (Spring Boot) ([`3b8e3159`](https://github.com/ivasibi/ascent/commit/3b8e3159))
-- Add `JPA` 3.1.5 (Spring Boot)
-- Add `Spring Boot` 3.1.5
+- [:rocket:] Add `Authentication` logic ([`47365e93`](https://github.com/ivasibi/ascent/commit/47365e93))
+- [:rocket:] Add `Dev` and `Prod` profiles ([`67f6b601`](https://github.com/ivasibi/ascent/commit/67f6b601))
+- [:package:] Add `HTMX` 1.9.8
+- [:package:] Add `Font Awesome` 6.4.2
+- [:package:] Add `Bootstrap` 5.3.2
+- [:package:] Add `Thymeleaf` 3.1.5 (Spring Boot) ([`3b8e3159`](https://github.com/ivasibi/ascent/commit/3b8e3159))
+- [:package:] Add `JPA` 3.1.5 (Spring Boot)
 
 ### Changed
 
-- Set `Redis` as session store ([`3b31a591`](https://github.com/ivasibi/ascent/commit/3b31a591)) 
+- [:rocket:] Set `Redis` as `Session Store` ([`3b31a591`](https://github.com/ivasibi/ascent/commit/3b31a591)) 
 
 ## [0.0.1] - 2023-10-22 [UNRELEASED]
+
+### Added
+
+- [:package:] Add `Spring Boot` 3.1.5
+- [:star:] Start `Ascent` project ([`c30d11d5`](https://github.com/ivasibi/ascent/commit/c30d11d5))
