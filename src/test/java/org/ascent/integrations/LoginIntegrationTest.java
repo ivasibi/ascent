@@ -33,6 +33,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -672,6 +673,94 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                     assertAll(
                             () -> assertTrue(redisSessionsKeys.isEmpty()),
                             () -> assertEquals(lastLogin, user.getLastLogin())
+                    );
+                }
+        );
+    }
+
+    private static Stream<Arguments> callAnywhereWithSessionRestoresInactiveInterval() {
+        return Stream.of(
+                arguments("username@email.com", "password"),
+                arguments("username2@email.com", "password2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callAnywhereWithSessionRestoresInactiveInterval(String email, String password) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange()
+                .expectCookie().exists(sessionCookieName);
+
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
+
+        String sessionKey = redisSessionKeys.toArray()[0].toString();
+
+        Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
+
+        assertNotNull(sessionMaxInactiveInterval);
+
+        assertAll(
+                () -> {
+                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                    assertNotNull(sessionKeyTTL);
+                    assertAll(
+                            () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
+                            () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
+                    );
+                }
+        );
+
+        redisTemplate.expire(sessionKey, 10, TimeUnit.SECONDS);
+
+        assertAll(
+                () -> {
+                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                    assertNotNull(sessionKeyTTL);
+                    assertAll(
+                            () -> assertTrue(sessionKeyTTL.intValue() >= 0),
+                            () -> assertTrue(sessionKeyTTL.intValue() <= 10)
+                    );
+                }
+        );
+
+        MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
+
+        assumeTrue(responseCookies.size() == 1);
+
+        String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
+
+        webTestClient.get()
+                .uri("/")
+                    .cookie(sessionCookieName, sessionCookie)
+                .exchange();
+
+        assertAll(
+                () -> {
+                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                    assertNotNull(sessionKeyTTL);
+                    assertAll(
+                            () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
+                            () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
                     );
                 }
         );
