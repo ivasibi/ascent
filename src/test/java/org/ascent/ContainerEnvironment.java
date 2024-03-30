@@ -44,15 +44,15 @@ public abstract class ContainerEnvironment {
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
-
+        dynamicPropertyRegistry.add("spring.profiles.active", () -> "dev");
         dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
         dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
+        dynamicPropertyRegistry.add("spring.session.store-type", () -> "redis");
+        dynamicPropertyRegistry.add("spring.session.redis.namespace", () -> sessionNamespace);
+
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
         dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
         dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
-
-        dynamicPropertyRegistry.add("spring.session.store-type", () -> "redis");
-        dynamicPropertyRegistry.add("spring.session.redis.namespace", () -> sessionNamespace);
         dynamicPropertyRegistry.add("spring.data.redis.host", () -> redisContainer.getHost());
         dynamicPropertyRegistry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
         dynamicPropertyRegistry.add("spring.data.redis.password", () -> redisPassword);
