@@ -15,3 +15,8 @@ spring:
     store-type: redis
     redis:
       namespace: ascent
+  cache:
+    type: redis
+    redis:
+      key-prefix: ascent:cache
+      time-to-live: 3600000
