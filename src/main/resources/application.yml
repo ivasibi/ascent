@@ -6,6 +6,7 @@ server:
         name: AC-SESSION
 spring:
   profiles:
+    default: dev
     active: '@spring.profiles.active@'
   jpa:
     open-in-view: false

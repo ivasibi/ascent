@@ -48,6 +48,7 @@ public abstract class ContainerEnvironment {
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
+        dynamicPropertyRegistry.add("spring.profiles.default", () -> "dev");
         dynamicPropertyRegistry.add("spring.profiles.active", () -> "dev");
         dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
         dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
