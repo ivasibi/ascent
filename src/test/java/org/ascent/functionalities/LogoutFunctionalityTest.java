@@ -1,6 +1,10 @@
 package org.ascent.functionalities;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
 import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
@@ -33,10 +37,17 @@ import static org.junit.jupiter.params.provider.Arguments.*;
 
 public class LogoutFunctionalityTest extends ContainerEnvironment {
 
-    private WebTestClient webTestClient;
+    private WebTestClient serverTestClient;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    private EntityManager entityManager;
+
+    private EntityTransaction entityTransaction;
 
     private LettuceConnectionFactory lettuceConnectionFactory;
 
@@ -44,7 +55,10 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
     @BeforeEach
     public void beforeEach() {
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+
+        entityManager = entityManagerFactory.createEntityManager();
+        entityTransaction = entityManager.getTransaction();
 
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(redisContainer.getHost());
@@ -65,7 +79,12 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
     @AfterEach
     public void afterEach() {
-        userRepository.deleteAll();
+        entityTransaction.begin();
+
+        entityManager.createQuery("DELETE FROM User").executeUpdate();
+
+        entityTransaction.commit();
+        entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
         if (redisKeys != null) {
@@ -100,31 +119,55 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(registerRequestJson)
                 .exchange();
 
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
+
         assertAll(
                 () -> assertTrue(userRepository.existsByUsername(username)),
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
                     assertAll(
-                            () -> assertNotNull(user.getId()),
-                            () -> assertEquals(username, user.getUsername()),
-                            () -> assertEquals(email, user.getEmail()),
+                            () -> assertNotNull(persistenceUser.getId()),
+                            () -> assertEquals(username, persistenceUser.getUsername()),
+                            () -> assertEquals(email, persistenceUser.getEmail()),
                             () -> {
                                 BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, user.getPassword()));
+                                assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
                             },
-                            () -> assertFalse(user.isDisabled()),
-                            () -> assertEquals(Role.USER, user.getRole()),
-                            () -> assertNotNull(user.getCreatedOn()),
-                            () -> assertNull(user.getLastLogin())
+                            () -> assertFalse(persistenceUser.isDisabled()),
+                            () -> assertEquals(Role.USER, persistenceUser.getRole()),
+                            () -> assertNotNull(persistenceUser.getCreatedOn()),
+                            () -> assertNull(persistenceUser.getLastLogin())
+                    );
+                },
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    assertAll(
+                            () -> assertNotNull(cacheUser.getId()),
+                            () -> assertEquals(username, cacheUser.getUsername()),
+                            () -> assertEquals(email, cacheUser.getEmail()),
+                            () -> {
+                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                                assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
+                            },
+                            () -> assertFalse(cacheUser.isDisabled()),
+                            () -> assertEquals(Role.USER, cacheUser.getRole()),
+                            () -> assertNotNull(cacheUser.getCreatedOn()),
+                            () -> assertNull(cacheUser.getLastLogin())
                     );
                 }
         );
@@ -135,13 +178,15 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
+
+        entityManager.clear();
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -155,23 +200,15 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
                     assertAll(
-                            () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
-                            () -> {
-                                Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
-                                assertNotNull(sessionLogged);
-                                assertAll(
-                                        () -> assertTrue(sessionLogged instanceof Boolean),
-                                        () -> assertTrue((boolean) sessionLogged)
-                                );
-                            },
                             () -> {
                                 Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                                 assertNotNull(sessionUsername);
                                 assertAll(
                                         () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, user.getUsername())
+                                        () -> assertEquals(sessionUsername, persistenceUser.getUsername())
                                 );
                             },
                             () -> {
@@ -179,11 +216,45 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
                                 assertNotNull(sessionRole);
                                 assertAll(
                                         () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, user.getRole())
+                                        () -> assertEquals(sessionRole, persistenceUser.getRole())
                                 );
                             },
-                            () -> assertNotNull(user.getLastLogin()),
-                            () -> assertTrue(user.getCreatedOn().isBefore(user.getLastLogin()))
+                            () -> assertNotNull(persistenceUser.getLastLogin()),
+                            () -> assertTrue(persistenceUser.getCreatedOn().isBefore(persistenceUser.getLastLogin()))
+                    );
+                },
+                () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
+                () -> {
+                    Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
+                    assertNotNull(sessionLogged);
+                    assertAll(
+                            () -> assertTrue(sessionLogged instanceof Boolean),
+                            () -> assertTrue((boolean) sessionLogged)
+                    );
+                },
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    assertAll(
+                            () -> {
+                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                                assertNotNull(sessionUsername);
+                                assertAll(
+                                        () -> assertTrue(sessionUsername instanceof String),
+                                        () -> assertEquals(sessionUsername, cacheUser.getUsername())
+                                );
+                            },
+                            () -> {
+                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                                assertNotNull(sessionRole);
+                                assertAll(
+                                        () -> assertTrue(sessionRole instanceof Role),
+                                        () -> assertEquals(sessionRole, cacheUser.getRole())
+                                );
+                            },
+                            () -> assertNotNull(cacheUser.getLastLogin()),
+                            () -> assertTrue(cacheUser.getCreatedOn().isBefore(cacheUser.getLastLogin()))
                     );
                 }
         );
@@ -194,7 +265,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        webTestClient.get()
+        serverTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
                     .cookie(sessionCookieName, sessionCookie)

@@ -1,6 +1,9 @@
 package org.ascent.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import jakarta.servlet.http.Cookie;
 import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
@@ -50,10 +53,17 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
     @Autowired
     private MockMvc mockMvc;
 
-    private WebTestClient webTestClient;
+    private WebTestClient serverTestClient;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    private EntityManager entityManager;
+
+    private EntityTransaction entityTransaction;
 
     private LettuceConnectionFactory lettuceConnectionFactory;
 
@@ -63,7 +73,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -89,6 +99,9 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         userRepository.save(user2);
         userRepository.flush();
 
+        entityManager = entityManagerFactory.createEntityManager();
+        entityTransaction = entityManager.getTransaction();
+
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(redisContainer.getHost());
         redisStandaloneConfiguration.setPort(redisContainer.getMappedPort(6379));
@@ -108,7 +121,12 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
 
     @AfterEach
     public void afterEach() {
-        userRepository.deleteAll();
+        entityTransaction.begin();
+
+        entityManager.createQuery("DELETE FROM User").executeUpdate();
+
+        entityTransaction.commit();
+        entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
         if (redisKeys != null) {
@@ -154,7 +172,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -167,7 +185,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        responseSpec = webTestClient.get()
+        responseSpec = serverTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
                     .cookie(sessionCookieName, sessionCookie)
@@ -196,7 +214,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isCreated());
         assumeTrue(redisContainer.isRunning());
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
                     .cookie(sessionCookieName, "session")
@@ -240,7 +258,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -259,7 +277,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        webTestClient.get()
+        serverTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
                     .cookie(sessionCookieName, sessionCookie)
@@ -291,7 +309,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -304,7 +322,7 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisSessionKeys != null);
         assumeTrue(redisSessionKeys.size() == 1);
 
-        webTestClient.get()
+        serverTestClient.get()
                 .uri("/logout")
                     .header("HX-Request", "true")
                     .cookie(sessionCookieName, "session")

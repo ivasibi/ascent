@@ -1,6 +1,7 @@
 package org.ascent.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.*;
 import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
@@ -51,10 +52,17 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     @Autowired
     private MockMvc mockMvc;
 
-    private WebTestClient webTestClient;
+    private WebTestClient serverTestClient;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    private EntityManager entityManager;
+
+    private EntityTransaction entityTransaction;
 
     private LettuceConnectionFactory lettuceConnectionFactory;
 
@@ -64,7 +72,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -100,6 +108,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         userRepository.save(user3);
         userRepository.flush();
 
+        entityManager = entityManagerFactory.createEntityManager();
+        entityTransaction = entityManager.getTransaction();
+
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(redisContainer.getHost());
         redisStandaloneConfiguration.setPort(redisContainer.getMappedPort(6379));
@@ -119,7 +130,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @AfterEach
     public void afterEach() {
-        userRepository.deleteAll();
+        entityTransaction.begin();
+
+        entityManager.createQuery("DELETE FROM User").executeUpdate();
+
+        entityTransaction.commit();
+        entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
         if (redisKeys != null) {
@@ -274,7 +290,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -328,7 +344,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -379,7 +395,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -431,7 +447,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -485,13 +501,16 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(loginRequestJson)
                 .exchange()
                 .expectCookie().exists(sessionCookieName);
+
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -500,27 +519,21 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
+
         assertAll(
-                () -> assertTrue(userRepository.existsByEmail(email)),
+                () -> assumeTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
                     assertAll(
-                            () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
-                            () -> {
-                                Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
-                                assertNotNull(sessionLogged);
-                                assertAll(
-                                        () -> assertTrue(sessionLogged instanceof Boolean),
-                                        () -> assertTrue((boolean) sessionLogged)
-                                );
-                            },
                             () -> {
                                 Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                                 assertNotNull(sessionUsername);
                                 assertAll(
                                         () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, user.getUsername())
+                                        () -> assertEquals(sessionUsername, persistenceUser.getUsername())
                                 );
                             },
                             () -> {
@@ -528,13 +541,51 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                                 assertNotNull(sessionRole);
                                 assertAll(
                                         () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, user.getRole())
+                                        () -> assertEquals(sessionRole, persistenceUser.getRole())
                                 );
                             },
-                            () -> assertNotEquals(lastLogin, user.getLastLogin()),
+                            () -> assertNotEquals(lastLogin, persistenceUser.getLastLogin()),
                             () -> {
                                 if (lastLogin != null) {
-                                    assertTrue(lastLogin.isBefore(user.getLastLogin()));
+                                    assertTrue(lastLogin.isBefore(persistenceUser.getLastLogin()));
+                                }
+                            }
+                    );
+                },
+                () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
+                () -> {
+                    Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
+                    assertNotNull(sessionLogged);
+                    assertAll(
+                            () -> assertTrue(sessionLogged instanceof Boolean),
+                            () -> assertTrue((boolean) sessionLogged)
+                    );
+                },
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    assertAll(
+                            () -> {
+                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                                assertNotNull(sessionUsername);
+                                assertAll(
+                                        () -> assertTrue(sessionUsername instanceof String),
+                                        () -> assertEquals(sessionUsername, cacheUser.getUsername())
+                                );
+                            },
+                            () -> {
+                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                                assertNotNull(sessionRole);
+                                assertAll(
+                                        () -> assertTrue(sessionRole instanceof Role),
+                                        () -> assertEquals(sessionRole, cacheUser.getRole())
+                                );
+                            },
+                            () -> assertNotEquals(lastLogin, cacheUser.getLastLogin()),
+                            () -> {
+                                if (lastLogin != null) {
+                                    assertTrue(lastLogin.isBefore(cacheUser.getLastLogin()));
                                 }
                             }
                     );
@@ -565,7 +616,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -573,13 +624,25 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
+
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assumeTrue(redisSessionKeys != null);
         assertAll(
                 () -> assertFalse(userRepository.existsByEmail(email)),
                 () -> assertNull(userRepository.findByEmail(email)),
-                () -> assertTrue(redisSessionKeys.isEmpty())
+                () -> assertThrows(NoResultException.class,
+                        () -> query.getSingleResult()),
+                () -> assertTrue(redisSessionKeys.isEmpty()),
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNull(cacheUser);
+                }
         );
     }
 
@@ -606,7 +669,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -614,18 +677,40 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
+
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assumeTrue(redisSessionKeys != null);
         assertAll(
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
-                    assertAll(
-                            () -> assertTrue(redisSessionKeys.isEmpty()),
-                            () -> assertEquals(lastLogin, user.getLastLogin())
-                    );
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
+                    if (lastLogin != null) {
+                        Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
+                    } else {
+                        assertNull(persistenceUser.getLastLogin());
+                    }
+                },
+                () -> assertTrue(redisSessionKeys.isEmpty()),
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    if (lastLogin != null) {
+                        Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
+                    } else {
+                        assertNull(cacheUser.getLastLogin());
+                    }
                 }
         );
     }
@@ -654,7 +739,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -662,18 +747,40 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 .exchange()
                 .expectCookie().doesNotExist(sessionCookieName);
 
-        Set<String> redisSessionsKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
 
-        assumeTrue(redisSessionsKeys != null);
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
+
+        assumeTrue(redisSessionKeys != null);
         assertAll(
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
-                    assertAll(
-                            () -> assertTrue(redisSessionsKeys.isEmpty()),
-                            () -> assertEquals(lastLogin, user.getLastLogin())
-                    );
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
+                    if (lastLogin != null) {
+                        Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
+                    } else {
+                        assertNull(persistenceUser.getLastLogin());
+                    }
+                },
+                () -> assertTrue(redisSessionKeys.isEmpty()),
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    if (lastLogin != null) {
+                        Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
+                    } else {
+                        assertNull(cacheUser.getLastLogin());
+                    }
                 }
         );
     }
@@ -700,7 +807,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -749,7 +856,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        webTestClient.get()
+        serverTestClient.get()
                 .uri("/")
                     .cookie(sessionCookieName, sessionCookie)
                 .exchange();

@@ -23,6 +23,10 @@ public abstract class ContainerEnvironment {
 
     public final static String sessionNamespace = "ascent";
 
+    public final static String cacheKeyPrefix = "ascent:cache";
+
+    public final static String cacheTTL = "3600000";
+
     private final static String mySQLImage = "mysql:8";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
@@ -49,6 +53,9 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("spring.jpa.hibernate.ddl-auto", () -> "update");
         dynamicPropertyRegistry.add("spring.session.store-type", () -> "redis");
         dynamicPropertyRegistry.add("spring.session.redis.namespace", () -> sessionNamespace);
+        dynamicPropertyRegistry.add("spring.cache.type", () -> "redis");
+        dynamicPropertyRegistry.add("spring.cache.redis.key-prefix", () -> cacheKeyPrefix);
+        dynamicPropertyRegistry.add("spring.cache.redis.time-to-live", () -> cacheTTL);
 
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
         dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());

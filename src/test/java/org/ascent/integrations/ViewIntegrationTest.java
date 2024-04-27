@@ -1,6 +1,9 @@
 package org.ascent.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
 import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
@@ -50,10 +53,17 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     @Autowired
     private MockMvc mockMvc;
 
-    private WebTestClient webTestClient;
+    private WebTestClient serverTestClient;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    private EntityManager entityManager;
+
+    private EntityTransaction entityTransaction;
 
     private LettuceConnectionFactory lettuceConnectionFactory;
 
@@ -63,7 +73,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -89,6 +99,9 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         userRepository.save(user2);
         userRepository.flush();
 
+        entityManager = entityManagerFactory.createEntityManager();
+        entityTransaction = entityManager.getTransaction();
+
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName(redisContainer.getHost());
         redisStandaloneConfiguration.setPort(redisContainer.getMappedPort(6379));
@@ -108,7 +121,12 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
     @AfterEach
     public void afterEach() {
-        userRepository.deleteAll();
+        entityTransaction.begin();
+
+        entityManager.createQuery("DELETE FROM User").executeUpdate();
+
+        entityTransaction.commit();
+        entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
         if (redisKeys != null) {
@@ -200,7 +218,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -213,7 +231,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        responseSpec = webTestClient.get()
+        responseSpec = serverTestClient.get()
                 .uri("/")
                     .cookie(sessionCookieName, sessionCookie)
                 .exchange();
@@ -241,7 +259,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isCreated());
         assumeTrue(redisContainer.isRunning());
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
                 .uri("/")
                     .cookie(sessionCookieName, "session")
                 .exchange();
@@ -347,7 +365,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/login")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -360,7 +378,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
-        responseSpec = webTestClient.get()
+        responseSpec = serverTestClient.get()
                 .uri("/navbar")
                     .cookie(sessionCookieName, sessionCookie)
                 .exchange();
@@ -388,7 +406,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isCreated());
         assumeTrue(redisContainer.isRunning());
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.get()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
                 .uri("/navbar")
                     .cookie(sessionCookieName, "session")
                 .exchange();

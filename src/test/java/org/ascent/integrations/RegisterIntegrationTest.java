@@ -1,6 +1,7 @@
 package org.ascent.integrations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.*;
 import org.ascent.ContainerEnvironment;
 import org.ascent.entities.User;
 import org.ascent.enums.Role;
@@ -14,6 +15,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -24,6 +30,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,16 +48,27 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
     @Autowired
     private MockMvc mockMvc;
 
-    private WebTestClient webTestClient;
+    private WebTestClient serverTestClient;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    private EntityManager entityManager;
+
+    private EntityTransaction entityTransaction;
+
+    private LettuceConnectionFactory lettuceConnectionFactory;
+
+    private RedisTemplate<String, Object> redisTemplate;
 
     @BeforeEach
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        webTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -65,11 +83,42 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
 
         userRepository.save(user);
         userRepository.flush();
+
+        entityManager = entityManagerFactory.createEntityManager();
+        entityTransaction = entityManager.getTransaction();
+
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
+        redisStandaloneConfiguration.setHostName(redisContainer.getHost());
+        redisStandaloneConfiguration.setPort(redisContainer.getMappedPort(6379));
+        redisStandaloneConfiguration.setPassword(redisPassword);
+
+        lettuceConnectionFactory = new LettuceConnectionFactory(redisStandaloneConfiguration);
+
+        redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(lettuceConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
+        redisTemplate.afterPropertiesSet();
+
+        lettuceConnectionFactory.start();
     }
 
     @AfterEach
     public void afterEach() {
-        userRepository.deleteAll();
+        entityTransaction.begin();
+
+        entityManager.createQuery("DELETE FROM User").executeUpdate();
+
+        entityTransaction.commit();
+        entityManager.close();
+
+        Set<String> redisKeys = redisTemplate.keys("*");
+        if (redisKeys != null) {
+            redisTemplate.delete(redisKeys);
+        }
+
+        lettuceConnectionFactory.stop();
     }
 
     private static Stream<Arguments> callWithNonExistingUserReturnsCreatedAndSuccess() {
@@ -196,7 +245,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -244,7 +293,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -292,7 +341,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        WebTestClient.ResponseSpec responseSpec = webTestClient.post()
+        WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -331,6 +380,8 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
     public void callWithNonExistingUserSavesUser(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
 
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername(username);
@@ -340,31 +391,55 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(registerRequestJson)
                 .exchange();
 
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
+
         assertAll(
                 () -> assertTrue(userRepository.existsByUsername(username)),
                 () -> assertTrue(userRepository.existsByEmail(email)),
                 () -> assertNotNull(userRepository.findByEmail(email)),
                 () -> {
-                    User user = userRepository.findByEmail(email);
+                    User persistenceUser = query.getSingleResult();
+                    assertNotNull(persistenceUser);
                     assertAll(
-                            () -> assertNotNull(user.getId()),
-                            () -> assertEquals(username, user.getUsername()),
-                            () -> assertEquals(email, user.getEmail()),
+                            () -> assertNotNull(persistenceUser.getId()),
+                            () -> assertEquals(username, persistenceUser.getUsername()),
+                            () -> assertEquals(email, persistenceUser.getEmail()),
                             () -> {
                                 BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, user.getPassword()));
+                                assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
                             },
-                            () -> assertFalse(user.isDisabled()),
-                            () -> assertEquals(Role.USER, user.getRole()),
-                            () -> assertNotNull(user.getCreatedOn()),
-                            () -> assertNull(user.getLastLogin())
+                            () -> assertFalse(persistenceUser.isDisabled()),
+                            () -> assertEquals(Role.USER, persistenceUser.getRole()),
+                            () -> assertNotNull(persistenceUser.getCreatedOn()),
+                            () -> assertNull(persistenceUser.getLastLogin())
+                    );
+                },
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNotNull(cacheUser);
+                    assertAll(
+                            () -> assertNotNull(cacheUser.getId()),
+                            () -> assertEquals(username, cacheUser.getUsername()),
+                            () -> assertEquals(email, cacheUser.getEmail()),
+                            () -> {
+                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                                assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
+                            },
+                            () -> assertFalse(cacheUser.isDisabled()),
+                            () -> assertEquals(Role.USER, cacheUser.getRole()),
+                            () -> assertNotNull(cacheUser.getCreatedOn()),
+                            () -> assertNull(cacheUser.getLastLogin())
                     );
                 }
         );
@@ -384,6 +459,8 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
     public void callWithExistingUsernameDoesNotSaveUser(String username, String email, String password) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
 
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername(username);
@@ -393,16 +470,28 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(registerRequestJson)
                 .exchange();
 
+        TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
+        query.setParameter("email", email);
+
+        String cacheKey = cacheKeyPrefix + ":users:email::" + email;
+
         assertAll(
                 () -> assertFalse(userRepository.existsByEmail(email)),
-                () -> assertNull(userRepository.findByEmail(email))
+                () -> assertNull(userRepository.findByEmail(email)),
+                () -> assertThrows(NoResultException.class,
+                        () -> query.getSingleResult()),
+                () -> {
+                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                    User cacheUser = (User) cacheObject;
+                    assertNull(cacheUser);
+                }
         );
     }
 
@@ -429,7 +518,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        webTestClient.post()
+        serverTestClient.post()
                 .uri("/register")
                     .header("HX-Request", "true")
                     .contentType(MediaType.APPLICATION_JSON)
