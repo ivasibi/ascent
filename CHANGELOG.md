@@ -1,9 +1,15 @@
 # Changelog
 
-## [0.0.5] - [UNRELEASED]
+## [0.0.5] - 2024-04-27 [UNRELEASED]
+
+### Added
+
+- [ :test_tube: ] Add `Cache` tests ([`0312ffe1`](https://github.com/ivasibi/ascent/commit/0312ffe1))
+- [ :rocket: ] Add `Redis` as `Cache Store` ([`5a0650fc`](https://github.com/ivasibi/ascent/commit/5a0650fc))
 
 ### Changed
 
+- [ :package: ] Bump `HTMX` from 1.9.10 to 1.9.11 ([`7bf4c683`](https://github.com/ivasibi/ascent/commit/7bf4c683))
 - [ :package: ] Bump `Spring Boot` from 3.2.3 to 3.2.4 ([`5d99cd5c`](https://github.com/ivasibi/ascent/commit/5d99cd5c))
 
 ## [0.0.4] - 2024-03-30 [UNRELEASED]
