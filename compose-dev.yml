@@ -1,0 +1,27 @@
+version: '3.8'
+name: ascent-dev
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_USER: ascent-dev
+      MYSQL_PASSWORD: ascent-dev
+      MYSQL_DATABASE: ascent-dev
+      MYSQL_ROOT_PASSWORD: ascent-dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./volumes/mysql-dev:/var/lib/mysql
+
+  redis:
+    image: redis:7.2.3
+    container_name: redis-dev
+    restart: unless-stopped
+    command: redis-server --requirepass ascent-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./volumes/redis-dev:/data
