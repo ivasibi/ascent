@@ -1,74 +1,61 @@
 # Developing
 
-### Requirements
+Follow this document step by step to prepare a machine for the development of this project.
+Before working on it, make sure to have the following tools and plugins installed on the development machine.
 
-|                    Name                    |        Version        |                                    Download                                    |                                     Guide                                      |
-|:------------------------------------------:|:---------------------:|:------------------------------------------------------------------------------:|:------------------------------------------------------------------------------:|
-|     [ :earth_americas: ] `Web Browser`     |           -           |                                       -                                        |                                       -                                        |
-|       [ :whale2: ] `Docker Desktop`        |           -           |    [ :link: ] [`Download`](https://www.docker.com/products/docker-desktop/)    |                 [ :book: ] [`Guide`](https://docs.docker.com/)                 |
-|            [ :octocat: ] `Git`             |           -           |                 [ :link: ] [`Download`](https://git-scm.com/)                  |                 [ :book: ] [`Guide`](https://git-scm.com/docs)                 |
-|            [ :coffee: ] `Java`             | _Java OpenJDK 21.0.1_ |  [ :link: ] [`Download`](https://www.oracle.com/java/technologies/downloads/)  |                                       -                                        |
-|            [ :hammer: ] `Maven`            |     _Maven 3.9.2_     |         [ :link: ] [`Download`](https://maven.apache.org/download.cgi)         |                                       -                                        |
-|         [ :computer: ] `IntelliJ`          |           -           |       [ :link: ] [`Download`](https://www.jetbrains.com/idea/download/)        | [ :book: ] [`Guide`](https://www.jetbrains.com/help/idea/getting-started.html) |
-|           [ :beaver: ] `DBeaver`           |           -           |             [ :link: ] [`Download`](https://dbeaver.io/download/)              |                                       -                                        |
-| [ :star: ] `Another Redis Desktop Manager` |           -           | [ :link: ] [`Download`](https://github.com/qishibo/AnotherRedisDesktopManager) |                                       -                                        |
+### Tools
+
+|                    Tool                    |        Version        |                                    Download                                    |                                      Documentation                                      |
+|:------------------------------------------:|:---------------------:|:------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------:|
+|   [ :earth_americas: ] `Microsoft Edge`    |           -           |     [ :link: ] [`Download`](https://www.microsoft.com/it-it/edge/download)     |                                            -                                            |
+|       [ :whale2: ] `Docker Desktop`        |           -           |    [ :link: ] [`Download`](https://www.docker.com/products/docker-desktop/)    |                 [ :book: ] [`Documentation`](https://docs.docker.com/)                  |
+|            [ :octocat: ] `Git`             |           -           |                 [ :link: ] [`Download`](https://git-scm.com/)                  |                 [ :book: ] [`Documentation`](https://git-scm.com/docs)                  |
+|            [ :coffee: ] `Java`             | _Java OpenJDK 21.0.1_ |  [ :link: ] [`Download`](https://www.oracle.com/java/technologies/downloads/)  |                                            -                                            |
+|            [ :hammer: ] `Maven`            |     _Maven 3.9.2_     |         [ :link: ] [`Download`](https://maven.apache.org/download.cgi)         |                                            -                                            |
+|       [ :computer: ] `IntelliJ IDEA`       |           -           |       [ :link: ] [`Download`](https://www.jetbrains.com/idea/download/)        | [ :book: ] [`Documentation`](https://www.jetbrains.com/help/idea/getting-started.html)  |
+|          [ :chipmunk: ] `DBeaver`          |           -           |             [ :link: ] [`Download`](https://dbeaver.io/download/)              |                                            -                                            |
+| [ :star: ] `Another Redis Desktop Manager` |           -           | [ :link: ] [`Download`](https://github.com/qishibo/AnotherRedisDesktopManager) |                                            -                                            |
+
+### Plugins
+
+|                 Plugin                  |              Tool              | Version |                                          Download                                          |
+|:---------------------------------------:|:------------------------------:|:-------:|:------------------------------------------------------------------------------------------:|
+|        [ :hot_pepper: ] `Lombok`        | [ :computer: ] `IntelliJ IDEA` |    -    |         [ :link: ] [`Download`](https://plugins.jetbrains.com/plugin/6317-lombok)          |
+| [ :grinning: ] `GitHub Markdown Emojis` | [ :computer: ] `IntelliJ IDEA` |    -    | [ :link: ] [`Download`](https://plugins.jetbrains.com/plugin/20705-github-markdown-emojis) | 
 
 ### Steps
 
-- [ :octocat: ] Clone the `repository`
+Once the development machine has all the requirements installed, follow this steps to have the project up and running.
+
+- [ :octocat: ] Clone the repository, and checkout on the `dev` branch of it. Use the command:
 
 ```
 git clone https://github.com/ivasibi/ascent.git
 git checkout dev
 ```
 
-- [ :whale2: ] Create development `containers`
+- [ :whale2: ] Create the development containers. Once these containers are running, the `volumes` directory will appear,
+mapping the contents of such containers. Use the command:
 
 ```
 cd ascent
 docker compose -f compose-dev.yml up -d
 ```
 
-> [!NOTE]
-> [ :whale2: ] Container volumes are stored in the `volumes` directory
+- [ :hammer: ] Select the `dev` profile. By doing this, at startup, the application will load the `src/main/java/application.yml`
+and `src/main/java/application-dev.yml` files. The latter contains the connection details that permits the application to
+connect to the containers created at the previous point. Profiles are defined in the `pom.xml` file.
 
-- [ :hammer: ] Select the dev `profile`
+- [ :computer: ] Run the `Ascent` configuration. Run configurations are stored in the `configs` directory, and are discovered during
+file indexing. In this way these configurations are shared across different workspaces.
 
-> [!TIP]
-> [ :hammer: ] Guide on profiles can be found here 
-> [ :book: ] [`Guide`](https://www.jetbrains.com/help/idea/work-with-maven-profiles.html)
-
-- [ :computer: ] Run the Ascent `configuration`
-
-> [!TIP]
-> [ :computer: ] Guide on configurations can be found here 
-> [ :book: ] [`Guide`](https://www.jetbrains.com/help/idea/run-debug-configuration.html)
-
-> [!NOTE]
-> [ :computer: ] Configurations are stored in the `configs` directory
-
-- [ :earth_americas: ] Connect to the `server`
-
-```
-http://localhost:8080
-```
+- [ :earth_americas: ] The application is now running and is reachable by navigating to `http://localhost:8080`.
 
 ### Connections
 
-#### MySQL
+Finally, for a better application development, connect to the containers created above.
 
-- [ :beaver: ] Connect to the MySQL `container`
+- [ :chipmunk: ] Create a new connection using the `MySQL` driver, and use the connection details stored in the 
+`compose-dev.yml`. Then, in the `Driver Properties` tab, set the `allowPublicKeyRetrieval` property to `true`.
 
-> [!NOTE]
-> [ :beaver: ] MySQL credentials are stored in the `compose-dev.yml` file
- 
-> [!WARNING] 
-> [ :beaver: ] Set the `allowPublicKeyRetrieval` property to `true` as shown in this guide
-> [ :book: ] [`Guide`](https://stackoverflow.com/questions/61749304/connection-between-dbeaver-mysql)
-
-#### Redis
-
-- [ :star: ] Connect to the Redis `container`
-
-> [!NOTE]
-> [ :star: ] Redis credentials are stored in the `compose-dev.yml` file
+- [ :star: ] Open a new connection, and set only the password field, using the value stored in the `compose-dev.yml` file.
