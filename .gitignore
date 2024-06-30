@@ -1,6 +1,5 @@
 .idea/
 target/
 volumes/
-*.iml
 
 **/application-prod.yml
