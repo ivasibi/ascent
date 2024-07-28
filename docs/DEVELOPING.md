@@ -46,7 +46,7 @@ docker compose -f compose-dev.yml up -d
 and `src/main/java/application-dev.yml` files. The latter contains the connection details that permits the application to
 connect to the containers created at the previous point. Profiles are defined in the `pom.xml` file.
 
-- [ :computer: ] Run the `Ascent` configuration. Run configurations are stored in the `configs` directory, and are discovered during
+- [ :computer: ] Run the `Ascent` configuration. These run configurations are stored in the `configs` directory, and are discovered during
 file indexing. In this way these configurations are shared across different workspaces.
 
 - [ :earth_americas: ] The application is now running and is reachable by navigating to `http://localhost:8080`.

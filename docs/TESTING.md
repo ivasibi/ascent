@@ -1,8 +1,8 @@
 # Testing
 
-This document contains information on testing configurations, stored in the `configs` directory.
+This document contains information on test configurations, stored in the `configs` directory.
 These configurations are discovered during file indexing and are ready to use without any further configuration.
-Each testing configuration runs all tests present in the directory, as shown in the table below.
+Each test configuration runs all tests present in the directory, as shown in the table below.
 
 ### Configurations
 
