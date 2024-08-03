@@ -34,11 +34,17 @@ git clone https://github.com/ivasibi/ascent.git
 git checkout dev
 ```
 
+- [ :gear: ] Copy the configurations files stored in the `configs` directory to target destination. Use the command:
+
+```
+cd ascent
+copy configs\.wslconfig $env:USERPROFILE
+```
+
 - [ :whale2: ] Create the development containers. Once these containers are running, the `volumes` directory will
   appear, mapping the contents of such containers. Use the command:
 
 ```
-cd ascent
 docker compose -f compose-dev.yml up -d
 ```
 
@@ -47,8 +53,8 @@ docker compose -f compose-dev.yml up -d
   details that permits the application to connect to the containers created at the previous point.
   Profiles are defined in the `pom.xml` file.
 
-- [ :computer: ] Run the `Ascent` configuration. These run configurations are stored in the `configs` directory, and are
-  discovered during file indexing. In this way these configurations are shared across different workspaces.
+- [ :computer: ] Run the `Ascent` configuration. These run configurations are also stored in the `configs` directory,
+  and are discovered during file indexing. In this way these configurations are shared across different workspaces.
 
 - [ :earth_americas: ] The application is now running and is reachable by navigating to `http://localhost:8080`.
 
