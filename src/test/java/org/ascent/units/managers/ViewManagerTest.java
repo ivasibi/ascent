@@ -21,7 +21,7 @@ public class ViewManagerTest {
     private ViewManager viewManager;
 
     private static Stream<Role> requestNavbarWithLoggedUserSetsModelAndView() {
-        return Stream.of(Role.USER, Role.ADMIN);
+        return Stream.of(Role.USER, Role.EDITOR, Role.MODERATOR, Role.ADMIN);
     }
 
     @ParameterizedTest

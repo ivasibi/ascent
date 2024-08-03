@@ -96,15 +96,15 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
     private static Stream<Arguments> registerNewUserThenLoginAndLogout() {
         return Stream.of(
-                arguments("username", "username@email.com", "password"),
-                arguments("username2", "username2@email.com", "password2"),
-                arguments("username3", "username3@email.com", "password3")
+                arguments("username", "username@email.com", "password", 120 * 60),
+                arguments("username2", "username2@email.com", "password2", 120 * 60),
+                arguments("username3", "username3@email.com", "password3", 120 * 60)
         );
     }
 
     @ParameterizedTest
     @MethodSource
-    public void registerNewUserThenLoginAndLogout(String username, String email, String password) throws Exception {
+    public void registerNewUserThenLoginAndLogout(String username, String email, String password, int maxInactiveInterval) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -230,6 +230,21 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
                     assertAll(
                             () -> assertTrue(sessionLogged instanceof Boolean),
                             () -> assertTrue((boolean) sessionLogged)
+                    );
+                },
+                () -> {
+                    Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
+                    assertNotNull(sessionMaxInactiveInterval);
+                    assertAll(
+                            () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
+                            () -> {
+                                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                                assertNotNull(sessionKeyTTL);
+                                assertAll(
+                                        () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
+                                        () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
+                                );
+                            }
                     );
                 },
                 () -> {

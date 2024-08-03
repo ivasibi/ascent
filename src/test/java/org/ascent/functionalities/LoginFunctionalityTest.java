@@ -94,14 +94,14 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
 
     private static Stream<Arguments> registerNewUserThenLogin() {
         return Stream.of(
-                arguments("username", "username@email.com", "password"),
-                arguments("username2", "username2@email.com", "password2")
+                arguments("username", "username@email.com", "password", 120 * 60),
+                arguments("username2", "username2@email.com", "password2", 120 * 60)
         );
     }
 
     @ParameterizedTest
     @MethodSource
-    public void registerNewUserThenLogin(String username, String email, String password) throws Exception {
+    public void registerNewUserThenLogin(String username, String email, String password, int maxInactiveInterval) throws Exception {
         assumeTrue(mySQLContainer.isCreated());
         assumeTrue(mySQLContainer.isRunning());
         assumeTrue(redisContainer.isCreated());
@@ -227,6 +227,21 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                     assertAll(
                             () -> assertTrue(sessionLogged instanceof Boolean),
                             () -> assertTrue((boolean) sessionLogged)
+                    );
+                },
+                () -> {
+                    Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
+                    assertNotNull(sessionMaxInactiveInterval);
+                    assertAll(
+                            () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
+                            () -> {
+                                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                                assertNotNull(sessionKeyTTL);
+                                assertAll(
+                                        () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
+                                        () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
+                                );
+                            }
                     );
                 },
                 () -> {

@@ -62,12 +62,32 @@ public class UserRepositoryTest extends ContainerEnvironment {
         user2.setEmail("username2@email.com");
         user2.setPassword(bCryptPasswordEncoder.encode("password2"));
         user2.setDisabled(false);
-        user2.setRole(Role.ADMIN);
+        user2.setRole(Role.EDITOR);
         user2.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
         user2.setLastLogin(Instant.now());
 
+        User user3 = new User();
+        user3.setUsername("username3");
+        user3.setEmail("username3@email.com");
+        user3.setPassword(bCryptPasswordEncoder.encode("password3"));
+        user3.setDisabled(true);
+        user3.setRole(Role.MODERATOR);
+        user3.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user3.setLastLogin(Instant.now());
+
+        User user4 = new User();
+        user4.setUsername("username4");
+        user4.setEmail("username4@email.com");
+        user4.setPassword(bCryptPasswordEncoder.encode("password4"));
+        user4.setDisabled(false);
+        user4.setRole(Role.ADMIN);
+        user4.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user4.setLastLogin(Instant.now());
+
         userRepository.save(user);
         userRepository.save(user2);
+        userRepository.save(user3);
+        userRepository.save(user4);
         userRepository.flush();
 
         entityManager = entityManagerFactory.createEntityManager();
@@ -108,7 +128,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfSavedUserIsPersistedAndCachedByEmail() {
-        return Stream.of("username@email.com", "username2@email.com");
+        return Stream.of("username@email.com", "username2@email.com", "username3@email.com", "username4@email.com");
     }
 
     @ParameterizedTest
@@ -154,7 +174,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfNotSavedUserIsPersistedAndCachedByEmail() {
-        return Stream.of("username3@email.com", "username4@email.com");
+        return Stream.of("username5@email.com", "username6@email.com");
     }
 
     @ParameterizedTest
@@ -184,7 +204,9 @@ public class UserRepositoryTest extends ContainerEnvironment {
     private static Stream<Arguments> checkIfSavingUserPersistsItAndUpdatesEmailCache() {
         return Stream.of(
                 arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.ADMIN)
+                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -262,7 +284,9 @@ public class UserRepositoryTest extends ContainerEnvironment {
     private static Stream<Arguments> checkIfSavingUserRestoresEmailCacheTTL() {
         return Stream.of(
                 arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.ADMIN)
+                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -334,7 +358,9 @@ public class UserRepositoryTest extends ContainerEnvironment {
     private static Stream<Arguments> checkIfDeletingUserRemovesItAndUpdatesEmailCache() {
         return Stream.of(
                 arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.ADMIN)
+                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -394,7 +420,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfSavedUserExistsByUsername() {
-        return Stream.of("username", "username2");
+        return Stream.of("username", "username2", "username3", "username4");
     }
 
     @ParameterizedTest
@@ -407,7 +433,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfNotSavedUserExistsByUsername() {
-        return Stream.of("username3", "username4");
+        return Stream.of("username5", "username6");
     }
 
     @ParameterizedTest
@@ -420,7 +446,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfSavedUserExistsByEmail() {
-        return Stream.of("username@email.com", "username2@email.com");
+        return Stream.of("username@email.com", "username2@email.com", "username3@email.com", "username4@email.com");
     }
 
     @ParameterizedTest
@@ -433,7 +459,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfNotSavedUserExistsByEmail() {
-        return Stream.of("username3@email.com", "username4@email.com");
+        return Stream.of("username5@email.com", "username6@email.com");
     }
 
     @ParameterizedTest
@@ -448,7 +474,9 @@ public class UserRepositoryTest extends ContainerEnvironment {
     private static Stream<Arguments> checkIfSavedUserIsReturnedByFindByEmail() {
         return Stream.of(
                 arguments("username", "username@email.com", "password", true, Role.USER),
-                arguments("username2", "username2@email.com", "password2", false, Role.ADMIN)
+                arguments("username2", "username2@email.com", "password2", false, Role.EDITOR),
+                arguments("username3", "username3@email.com", "password3", true, Role.MODERATOR),
+                arguments("username4", "username4@email.com", "password4", false, Role.ADMIN)
         );
     }
 
@@ -483,7 +511,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfNotSavedUserIsReturnedByFindByEmail() {
-        return Stream.of("username3@email.com", "username4@email.com");
+        return Stream.of("username5@email.com", "username6@email.com");
     }
 
     @ParameterizedTest
@@ -498,7 +526,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfFindByEmailPopulatesEmailCache() {
-        return Stream.of("username@email.com", "username2@email.com");
+        return Stream.of("username@email.com", "username2@email.com", "username3@email.com", "username4@email.com");
     }
 
     @ParameterizedTest
@@ -547,7 +575,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfNotFindByEmailPopulatesEmailCache() {
-        return Stream.of("username3@email.com", "username4@email.com");
+        return Stream.of("username5@email.com", "username6@email.com");
     }
 
     @ParameterizedTest
@@ -580,7 +608,9 @@ public class UserRepositoryTest extends ContainerEnvironment {
     private static Stream<Arguments> checkIfFindByEmailRetrievesSavedUserFromEmailCache() {
         return Stream.of(
                 arguments("username@email.com", true),
-                arguments("username2@email.com", false)
+                arguments("username2@email.com", false),
+                arguments("username3@email.com", true),
+                arguments("username4@email.com", false)
         );
     }
 
@@ -652,7 +682,7 @@ public class UserRepositoryTest extends ContainerEnvironment {
     }
 
     private static Stream<String> checkIfFindByEmailDoesNotRestoreEmailCacheTTL() {
-        return Stream.of("username@email.com", "username2@email.com");
+        return Stream.of("username@email.com", "username2@email.com", "username3@email.com", "username4@email.com");
     }
 
     @ParameterizedTest

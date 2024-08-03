@@ -90,7 +90,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         user2.setEmail("username2@email.com");
         user2.setPassword(bCryptPasswordEncoder.encode("password2"));
         user2.setDisabled(false);
-        user2.setRole(Role.ADMIN);
+        user2.setRole(Role.EDITOR);
         user2.setCreatedOn(Instant.now().minus(2, ChronoUnit.HOURS));
         user2.setLastLogin(Instant.now().minus(1, ChronoUnit.HOURS));
 
@@ -98,14 +98,34 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         user3.setUsername("username3");
         user3.setEmail("username3@email.com");
         user3.setPassword(bCryptPasswordEncoder.encode("password3"));
-        user3.setDisabled(true);
-        user3.setRole(Role.USER);
+        user3.setDisabled(false);
+        user3.setRole(Role.MODERATOR);
         user3.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
         user3.setLastLogin(null);
+
+        User user4 = new User();
+        user4.setUsername("username4");
+        user4.setEmail("username4@email.com");
+        user4.setPassword(bCryptPasswordEncoder.encode("password4"));
+        user4.setDisabled(false);
+        user4.setRole(Role.ADMIN);
+        user4.setCreatedOn(Instant.now().minus(2, ChronoUnit.HOURS));
+        user4.setLastLogin(Instant.now().minus(1, ChronoUnit.HOURS));
+
+        User user5 = new User();
+        user5.setUsername("username5");
+        user5.setEmail("username5@email.com");
+        user5.setPassword(bCryptPasswordEncoder.encode("password5"));
+        user5.setDisabled(true);
+        user5.setRole(Role.USER);
+        user5.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user5.setLastLogin(null);
 
         userRepository.save(user);
         userRepository.save(user2);
         userRepository.save(user3);
+        userRepository.save(user4);
+        userRepository.save(user5);
         userRepository.flush();
 
         entityManager = entityManagerFactory.createEntityManager();
@@ -148,7 +168,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithExistingUserReturnsOkAndSuccess() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 
@@ -177,9 +199,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials() {
         return Stream.of(
-                arguments("username4@email.com", "password4"),
-                arguments("username5@email.com", "password5"),
-                arguments("username6@email.com", "password6")
+                arguments("username6@email.com", "password6"),
+                arguments("username7@email.com", "password7"),
+                arguments("username8@email.com", "password8")
         );
     }
 
@@ -209,7 +231,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithDisabledUserReturnsUnauthorizedAndDisabledUser() {
         return Stream.of(
-                arguments("username3@email.com", "password3")
+                arguments("username5@email.com", "password5")
         );
     }
 
@@ -240,7 +262,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentials() {
         return Stream.of(
                 arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3")
+                arguments("username2@email.com", "password3"),
+                arguments("username3@email.com", "password4"),
+                arguments("username4@email.com", "password5")
         );
     }
 
@@ -271,7 +295,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithExistingUserReturnsView() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 
@@ -323,9 +349,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithNonExistingUserReturnsView() {
         return Stream.of(
-                arguments("username4@email.com", "password4"),
-                arguments("username5@email.com", "password5"),
-                arguments("username6@email.com", "password6")
+                arguments("username6@email.com", "password6"),
+                arguments("username7@email.com", "password7"),
+                arguments("username8@email.com", "password8")
         );
     }
 
@@ -376,7 +402,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithDisabledUserReturnsView() {
         return Stream.of(
-                arguments("username3@email.com", "password3")
+                arguments("username5@email.com", "password5")
         );
     }
 
@@ -428,7 +454,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsView() {
         return Stream.of(
                 arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3")
+                arguments("username2@email.com", "password3"),
+                arguments("username3@email.com", "password4"),
+                arguments("username4@email.com", "password5")
         );
     }
 
@@ -480,7 +508,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithExistingUserReturnsSessionAndUpdatesUser() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 
@@ -548,6 +578,8 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                             () -> {
                                 if (lastLogin != null) {
                                     assertTrue(lastLogin.isBefore(persistenceUser.getLastLogin()));
+                                } else {
+                                    assertNotNull(persistenceUser.getLastLogin());
                                 }
                             }
                     );
@@ -586,6 +618,8 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                             () -> {
                                 if (lastLogin != null) {
                                     assertTrue(lastLogin.isBefore(cacheUser.getLastLogin()));
+                                } else {
+                                    assertNotNull(cacheUser.getLastLogin());
                                 }
                             }
                     );
@@ -595,9 +629,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithNonExistingUserReturnsNoSession() {
         return Stream.of(
-                arguments("username4@email.com", "password4"),
-                arguments("username5@email.com", "password5"),
-                arguments("username6@email.com", "password6")
+                arguments("username6@email.com", "password6"),
+                arguments("username7@email.com", "password7"),
+                arguments("username8@email.com", "password8")
         );
     }
 
@@ -648,7 +682,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithDisabledUserReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
-                arguments("username3@email.com", "password3")
+                arguments("username5@email.com", "password5")
         );
     }
 
@@ -718,7 +752,9 @@ public class LoginIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
                 arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3")
+                arguments("username2@email.com", "password3"),
+                arguments("username3@email.com", "password4"),
+                arguments("username4@email.com", "password5")
         );
     }
 
@@ -785,10 +821,68 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         );
     }
 
+    private static Stream<Arguments> callWithExistingUserReturnsSessionWithInactiveInterval() {
+        return Stream.of(
+            arguments("username@email.com", "password", 120 * 60),
+            arguments("username2@email.com", "password2", 60 * 60),
+            arguments("username3@email.com", "password3", 30 * 60),
+            arguments("username4@email.com", "password4", 15 * 60)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingUserReturnsSessionWithInactiveInterval(String email, String password, int maxInactiveInterval) throws Exception {
+        assumeTrue(mySQLContainer.isCreated());
+        assumeTrue(mySQLContainer.isRunning());
+        assumeTrue(redisContainer.isCreated());
+        assumeTrue(redisContainer.isRunning());
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        serverTestClient.post()
+                .uri("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(loginRequestJson)
+                .exchange()
+                .expectCookie().exists(sessionCookieName);
+
+        Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
+
+        assumeTrue(redisSessionKeys != null);
+        assumeTrue(redisSessionKeys.size() == 1);
+
+        String sessionKey = redisSessionKeys.toArray()[0].toString();
+
+        Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
+
+        assertNotNull(sessionMaxInactiveInterval);
+
+        assertAll(
+                () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
+                () -> {
+                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                    assertNotNull(sessionKeyTTL);
+                    assertAll(
+                            () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
+                            () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
+                    );
+                }
+        );
+    }
+
     private static Stream<Arguments> callAnywhereWithSessionRestoresInactiveInterval() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 

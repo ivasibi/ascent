@@ -91,12 +91,32 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         user2.setEmail("username2@email.com");
         user2.setPassword(bCryptPasswordEncoder.encode("password2"));
         user2.setDisabled(false);
-        user2.setRole(Role.ADMIN);
-        user2.setCreatedOn(Instant.now().minus(2, ChronoUnit.HOURS));
-        user2.setLastLogin(Instant.now().minus(1, ChronoUnit.HOURS));
+        user2.setRole(Role.EDITOR);
+        user2.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user2.setLastLogin(null);
+
+        User user3 = new User();
+        user3.setUsername("username3");
+        user3.setEmail("username3@email.com");
+        user3.setPassword(bCryptPasswordEncoder.encode("password3"));
+        user3.setDisabled(false);
+        user3.setRole(Role.MODERATOR);
+        user3.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user3.setLastLogin(Instant.now());
+
+        User user4 = new User();
+        user4.setUsername("username4");
+        user4.setEmail("username4@email.com");
+        user4.setPassword(bCryptPasswordEncoder.encode("password4"));
+        user4.setDisabled(false);
+        user4.setRole(Role.ADMIN);
+        user4.setCreatedOn(Instant.now().minus(1, ChronoUnit.HOURS));
+        user4.setLastLogin(Instant.now());
 
         userRepository.save(user);
         userRepository.save(user2);
+        userRepository.save(user3);
+        userRepository.save(user4);
         userRepository.flush();
 
         entityManager = entityManagerFactory.createEntityManager();
@@ -137,7 +157,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     }
 
     private static Stream<Role> callIndexWithLoggedUserReturnsOkAndIndex() {
-        return Stream.of(Role.USER, Role.ADMIN);
+        return Stream.of(Role.USER, Role.EDITOR, Role.MODERATOR, Role.ADMIN);
     }
 
     @ParameterizedTest
@@ -201,7 +221,9 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callIndexWithLoggedUserReturnsView() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 
@@ -284,7 +306,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     }
 
     private static Stream<Role> callNavbarWithLoggedUserReturnsOkAndNavbar() {
-        return Stream.of(Role.USER, Role.ADMIN);
+        return Stream.of(Role.USER, Role.EDITOR, Role.MODERATOR, Role.ADMIN);
     }
 
     @ParameterizedTest
@@ -348,7 +370,9 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     private static Stream<Arguments> callNavbarWithLoggedUserReturnsView() {
         return Stream.of(
                 arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2")
+                arguments("username2@email.com", "password2"),
+                arguments("username3@email.com", "password3"),
+                arguments("username4@email.com", "password4")
         );
     }
 
