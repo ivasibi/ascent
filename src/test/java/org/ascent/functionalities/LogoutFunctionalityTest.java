@@ -96,9 +96,9 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
     private static Stream<Arguments> registerNewUserThenLoginAndLogout() {
         return Stream.of(
-                arguments("username", "username@email.com", "password", 120 * 60),
-                arguments("username2", "username2@email.com", "password2", 120 * 60),
-                arguments("username3", "username3@email.com", "password3", 120 * 60)
+            arguments("username", "username@email.com", "password", 120 * 60),
+            arguments("username2", "username2@email.com", "password2", 120 * 60),
+            arguments("username3", "username3@email.com", "password3", 120 * 60)
         );
     }
 
@@ -120,11 +120,11 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -132,44 +132,44 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertTrue(userRepository.existsByUsername(username)),
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertNotNull(persistenceUser.getId()),
-                            () -> assertEquals(username, persistenceUser.getUsername()),
-                            () -> assertEquals(email, persistenceUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
-                            },
-                            () -> assertFalse(persistenceUser.isDisabled()),
-                            () -> assertEquals(Role.USER, persistenceUser.getRole()),
-                            () -> assertNotNull(persistenceUser.getCreatedOn()),
-                            () -> assertNull(persistenceUser.getLastLogin())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertNotNull(cacheUser.getId()),
-                            () -> assertEquals(username, cacheUser.getUsername()),
-                            () -> assertEquals(email, cacheUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
-                            },
-                            () -> assertFalse(cacheUser.isDisabled()),
-                            () -> assertEquals(Role.USER, cacheUser.getRole()),
-                            () -> assertNotNull(cacheUser.getCreatedOn()),
-                            () -> assertNull(cacheUser.getLastLogin())
-                    );
-                }
+            () -> assertTrue(userRepository.existsByUsername(username)),
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertNotNull(persistenceUser.getId()),
+                    () -> assertEquals(username, persistenceUser.getUsername()),
+                    () -> assertEquals(email, persistenceUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
+                    },
+                    () -> assertFalse(persistenceUser.isDisabled()),
+                    () -> assertEquals(Role.USER, persistenceUser.getRole()),
+                    () -> assertNotNull(persistenceUser.getCreatedOn()),
+                    () -> assertNull(persistenceUser.getLastLogin())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertNotNull(cacheUser.getId()),
+                    () -> assertEquals(username, cacheUser.getUsername()),
+                    () -> assertEquals(email, cacheUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
+                    },
+                    () -> assertFalse(cacheUser.isDisabled()),
+                    () -> assertEquals(Role.USER, cacheUser.getRole()),
+                    () -> assertNotNull(cacheUser.getCreatedOn()),
+                    () -> assertNull(cacheUser.getLastLogin())
+                );
+            }
         );
 
         LoginRequest loginRequest = new LoginRequest();
@@ -179,12 +179,12 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         entityManager.clear();
 
@@ -196,82 +196,82 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
         assertAll(
-                () -> assertTrue(userRepository.existsByUsername(username)),
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> {
-                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
-                                assertNotNull(sessionUsername);
-                                assertAll(
-                                        () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, persistenceUser.getUsername())
-                                );
-                            },
-                            () -> {
-                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
-                                assertNotNull(sessionRole);
-                                assertAll(
-                                        () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, persistenceUser.getRole())
-                                );
-                            },
-                            () -> assertNotNull(persistenceUser.getLastLogin()),
-                            () -> assertTrue(persistenceUser.getCreatedOn().isBefore(persistenceUser.getLastLogin()))
-                    );
-                },
-                () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
-                () -> {
-                    Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
-                    assertNotNull(sessionLogged);
-                    assertAll(
-                            () -> assertTrue(sessionLogged instanceof Boolean),
-                            () -> assertTrue((boolean) sessionLogged)
-                    );
-                },
-                () -> {
-                    Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
-                    assertNotNull(sessionMaxInactiveInterval);
-                    assertAll(
-                            () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
-                            () -> {
-                                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
-                                assertNotNull(sessionKeyTTL);
-                                assertAll(
-                                        () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
-                                        () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
-                                );
-                            }
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> {
-                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
-                                assertNotNull(sessionUsername);
-                                assertAll(
-                                        () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, cacheUser.getUsername())
-                                );
-                            },
-                            () -> {
-                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
-                                assertNotNull(sessionRole);
-                                assertAll(
-                                        () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, cacheUser.getRole())
-                                );
-                            },
-                            () -> assertNotNull(cacheUser.getLastLogin()),
-                            () -> assertTrue(cacheUser.getCreatedOn().isBefore(cacheUser.getLastLogin()))
-                    );
-                }
+            () -> assertTrue(userRepository.existsByUsername(username)),
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> {
+                        Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                        assertNotNull(sessionUsername);
+                        assertAll(
+                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertEquals(sessionUsername, persistenceUser.getUsername())
+                        );
+                    },
+                    () -> {
+                        Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                        assertNotNull(sessionRole);
+                        assertAll(
+                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertEquals(sessionRole, persistenceUser.getRole())
+                        );
+                    },
+                    () -> assertNotNull(persistenceUser.getLastLogin()),
+                    () -> assertTrue(persistenceUser.getCreatedOn().isBefore(persistenceUser.getLastLogin()))
+                );
+            },
+            () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
+            () -> {
+                Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
+                assertNotNull(sessionLogged);
+                assertAll(
+                    () -> assertTrue(sessionLogged instanceof Boolean),
+                    () -> assertTrue((boolean) sessionLogged)
+                );
+            },
+            () -> {
+                Object sessionMaxInactiveInterval = redisTemplate.opsForHash().get(sessionKey, "maxInactiveInterval");
+                assertNotNull(sessionMaxInactiveInterval);
+                assertAll(
+                    () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
+                    () -> {
+                        Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                        assertNotNull(sessionKeyTTL);
+                        assertAll(
+                            () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
+                            () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
+                        );
+                    }
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> {
+                        Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                        assertNotNull(sessionUsername);
+                        assertAll(
+                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertEquals(sessionUsername, cacheUser.getUsername())
+                        );
+                    },
+                    () -> {
+                        Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                        assertNotNull(sessionRole);
+                        assertAll(
+                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertEquals(sessionRole, cacheUser.getRole())
+                        );
+                    },
+                    () -> assertNotNull(cacheUser.getLastLogin()),
+                    () -> assertTrue(cacheUser.getCreatedOn().isBefore(cacheUser.getLastLogin()))
+                );
+            }
         );
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
@@ -281,10 +281,10 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         serverTestClient.get()
-                .uri("/logout")
-                    .header("HX-Request", "true")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/logout")
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 

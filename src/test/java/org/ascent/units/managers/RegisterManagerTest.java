@@ -30,7 +30,7 @@ public class RegisterManagerTest {
         when(mockUserRepository.existsByUsername(any())).thenReturn(true);
 
         assertThrows(UsernameAlreadyInUseException.class,
-                () -> registerManager.register(mockRegisterRequest));
+            () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
@@ -50,7 +50,7 @@ public class RegisterManagerTest {
         when(mockUserRepository.existsByEmail(any())).thenReturn(true);
 
         assertThrows(EmailAlreadyInUseException.class,
-                () -> registerManager.register(mockRegisterRequest));
+            () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class RegisterManagerTest {
         RegisterRequest mockRegisterRequest = mock();
 
         assertThrows(IllegalArgumentException.class,
-                () -> registerManager.register(mockRegisterRequest));
+            () -> registerManager.register(mockRegisterRequest));
     }
 
     @Test

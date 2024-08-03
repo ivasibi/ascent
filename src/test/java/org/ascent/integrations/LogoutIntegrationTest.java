@@ -161,23 +161,23 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         Cookie cookie = new Cookie(sessionCookieName, "session");
 
         mockMvc.perform(
-                        get("/logout")
-                                .header("HX-Request", "true")
-                                .cookie(cookie))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/logout_response :: success"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
+                get("/logout")
+                    .header("HX-Request", "true")
+                    .cookie(cookie))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/logout_response :: success"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
     }
 
     private static Stream<Arguments> callWithSessionReturnsView() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -195,11 +195,11 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
@@ -208,26 +208,26 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         responseSpec = serverTestClient.get()
-                .uri("/logout")
-                    .header("HX-Request", "true")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/logout")
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+            }
         );
     }
 
@@ -237,35 +237,35 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isRunning());
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
-                .uri("/logout")
-                    .header("HX-Request", "true")
-                    .cookie(sessionCookieName, "session")
-                .exchange();
+            .uri("/logout")
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, "session")
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithSessionInvalidatesSession() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -283,12 +283,12 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -302,10 +302,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         serverTestClient.get()
-                .uri("/logout")
-                    .header("HX-Request", "true")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/logout")
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -315,10 +315,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithoutSessionDoesNotInvalidateSession() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -336,12 +336,12 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -349,10 +349,10 @@ public class LogoutIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisSessionKeys.size() == 1);
 
         serverTestClient.get()
-                .uri("/logout")
-                    .header("HX-Request", "true")
-                    .cookie(sessionCookieName, "session")
-                .exchange();
+            .uri("/logout")
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, "session")
+            .exchange();
 
         redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 

@@ -42,7 +42,7 @@ public class LoginManagerTest {
         when(mockUserRepository.findByEmail(any())).thenReturn(null);
 
         assertThrows(InvalidCredentialsException.class,
-                () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
+            () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
     }
 
     private static Stream<Role> requestWithExistingUserDoesNotThrowException() {
@@ -81,7 +81,7 @@ public class LoginManagerTest {
         when(mockUserRepository.findByEmail(any())).thenReturn(mockUser);
 
         assertThrows(UserDisabledException.class,
-                () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
+            () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class LoginManagerTest {
         when(mockUserRepository.findByEmail(any())).thenReturn(mockUser);
 
         assertThrows(InvalidCredentialsException.class,
-                () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
+            () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class LoginManagerTest {
         when(mockUserRepository.findByEmail(any())).thenReturn(mockUser);
 
         assertThrows(NullPointerException.class,
-                () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
+            () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
     }
 
     private static Stream<Role> requestWithSameSessionThrowsIllegalStateException() {
@@ -144,7 +144,7 @@ public class LoginManagerTest {
         when(mockUserRepository.findByEmail(any())).thenReturn(mockUser);
 
         assertThrows(IllegalStateException.class,
-                () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
+            () -> loginManager.login(mockHttpServletRequest, mockLoginRequest));
     }
 
     private static Stream<Role> requestWithoutExceptionThrownInvalidatesOldSession() {

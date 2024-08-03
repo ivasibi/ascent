@@ -41,36 +41,36 @@ public class LogoutControllerTest {
     @Test
     public void callWithoutHTMXHeaderReturnsNotFound() throws Exception {
         mockMvc.perform(
-                        get("/logout"))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+                get("/logout"))
+            .andDo(print())
+            .andExpect(status().isNotFound());
     }
 
     @Test
     public void callWithPostHTTPMethodReturnsMethodNotAllowed() throws Exception {
         mockMvc.perform(
-                        post("/logout")
-                                .header("HX-Request", "true"))
-                .andDo(print())
-                .andExpect(status().isMethodNotAllowed());
+                post("/logout")
+                    .header("HX-Request", "true"))
+            .andDo(print())
+            .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void callWithoutExceptionThrownReturnsOkAndSuccess() throws Exception {
         mockMvc.perform(
-                        get("/logout")
-                                .header("HX-Request", "true"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(view().name("responses/logout_response :: success"));
+                get("/logout")
+                    .header("HX-Request", "true"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(view().name("responses/logout_response :: success"));
     }
 
     @Test
     public void callThenCallsLogoutManagerLogoutMethod() throws Exception {
         mockMvc.perform(
-                        get("/logout")
-                                .header("HX-Request", "true"))
-                .andDo(print());
+                get("/logout")
+                    .header("HX-Request", "true"))
+            .andDo(print());
 
         verify(mockLogoutManager, times(1)).logout(any(HttpServletRequest.class));
     }
@@ -80,12 +80,12 @@ public class LogoutControllerTest {
         doThrow(new RuntimeException()).when(mockLogoutManager).logout(any(HttpServletRequest.class));
 
         mockMvc.perform(
-                        get("/logout")
-                                .header("HX-Request", "true"))
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("responses/logout_response :: error"))
-                .andExpect(result -> assertNotNull(result.getResolvedException()));
+                get("/logout")
+                    .header("HX-Request", "true"))
+            .andDo(print())
+            .andExpect(status().isInternalServerError())
+            .andExpect(view().name("responses/logout_response :: error"))
+            .andExpect(result -> assertNotNull(result.getResolvedException()));
     }
 
     @Test
@@ -94,14 +94,14 @@ public class LogoutControllerTest {
         doThrow(new RuntimeException("RuntimeException")).when(mockLogoutManager).logout(any(HttpServletRequest.class));
 
         mockMvc.perform(
-                        get("/logout")
-                                .header("HX-Request", "true"))
-                .andDo(print());
+                get("/logout")
+                    .header("HX-Request", "true"))
+            .andDo(print());
 
         assertAll(
-                () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
-                () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LogoutController")),
-                () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+            () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LogoutController")),
+            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
         );
     }
 }

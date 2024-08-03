@@ -54,11 +54,11 @@ public class LoginControllerTest {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isNotFound());
+                post("/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -69,12 +69,12 @@ public class LoginControllerTest {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        get("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isMethodNotAllowed());
+                get("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
@@ -85,12 +85,12 @@ public class LoginControllerTest {
         String loginRequestUrlEncoded = URLEncoder.encode(loginRequestString, StandardCharsets.UTF_8);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                                .content(loginRequestUrlEncoded))
-                .andDo(print())
-                .andExpect(status().isUnsupportedMediaType());
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .content(loginRequestUrlEncoded))
+            .andDo(print())
+            .andExpect(status().isUnsupportedMediaType());
     }
 
     @Test
@@ -101,13 +101,13 @@ public class LoginControllerTest {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(view().name("responses/login_response :: success"));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(view().name("responses/login_response :: success"));
     }
 
     @Test
@@ -118,11 +118,11 @@ public class LoginControllerTest {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print());
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print());
 
         verify(mockLoginManager, times(1)).login(any(HttpServletRequest.class), any(LoginRequest.class));
     }
@@ -137,14 +137,14 @@ public class LoginControllerTest {
         doThrow(new InvalidCredentialsException()).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(view().name("responses/login_response :: invalid_credentials"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(view().name("responses/login_response :: invalid_credentials"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException));
     }
 
     @Test
@@ -157,14 +157,14 @@ public class LoginControllerTest {
         doThrow(new UserDisabledException()).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(view().name("responses/login_response :: user_disabled"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(view().name("responses/login_response :: user_disabled"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException));
     }
 
     @Test
@@ -177,14 +177,14 @@ public class LoginControllerTest {
         doThrow(new RuntimeException()).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isInternalServerError())
-                .andExpect(view().name("responses/login_response :: error"))
-                .andExpect(result -> assertNotNull(result.getResolvedException()));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isInternalServerError())
+            .andExpect(view().name("responses/login_response :: error"))
+            .andExpect(result -> assertNotNull(result.getResolvedException()));
     }
 
     @Test
@@ -198,16 +198,16 @@ public class LoginControllerTest {
         doThrow(new RuntimeException("RuntimeException")).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print());
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print());
 
         assertAll(
-                () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
-                () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
-                () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+            () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
+            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
         );
     }
 }

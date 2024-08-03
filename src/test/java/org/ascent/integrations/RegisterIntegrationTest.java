@@ -123,10 +123,10 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithNonExistingUserReturnsCreatedAndSuccess() {
         return Stream.of(
-                arguments("username2", "username2@email.com", "password2"),
-                arguments("username3", "username3@email.com", "password3"),
-                arguments("username4", "username4@email.com", "password4"),
-                arguments("username5", "username5@email.com", "password5")
+            arguments("username2", "username2@email.com", "password2"),
+            arguments("username3", "username3@email.com", "password3"),
+            arguments("username4", "username4@email.com", "password4"),
+            arguments("username5", "username5@email.com", "password5")
         );
     }
 
@@ -142,24 +142,24 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                        post("/register")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(registerRequestJson))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: success"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print())
+            .andExpect(status().isCreated())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/register_response :: success"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
     }
 
     private static Stream<Arguments> callWithExistingUsernameReturnsConflictAndUsernameAlreadyInUse() {
         return Stream.of(
-                arguments("username", "username2@email.com", "password"),
-                arguments("username", "username2@email.com", "password2"),
-                arguments("username", "username3@email.com", "password2"),
-                arguments("username", "username3@email.com", "password3")
+            arguments("username", "username2@email.com", "password"),
+            arguments("username", "username2@email.com", "password2"),
+            arguments("username", "username3@email.com", "password2"),
+            arguments("username", "username3@email.com", "password3")
         );
     }
 
@@ -175,25 +175,25 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                        post("/register")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(registerRequestJson))
-                .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: username_already_in_use"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Username is already in use!</span>")));
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/register_response :: username_already_in_use"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Username is already in use!</span>")));
     }
 
     private static Stream<Arguments> callWithExistingEmailReturnsConflictAndEmailAlreadyInUse() {
         return Stream.of(
-                arguments("username2", "username@email.com", "password"),
-                arguments("username2", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password3")
+            arguments("username2", "username@email.com", "password"),
+            arguments("username2", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password3")
         );
     }
 
@@ -209,25 +209,25 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         mockMvc.perform(
-                        post("/register")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(registerRequestJson))
-                .andDo(print())
-                .andExpect(status().isConflict())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/register_response :: email_already_in_use"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Email is already in use!</span>")));
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/register_response :: email_already_in_use"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Email is already in use!</span>")));
     }
 
     private static Stream<Arguments> callWithNonExistingUserReturnsView() {
         return Stream.of(
-                arguments("username2", "username2@email.com", "password2"),
-                arguments("username3", "username3@email.com", "password3"),
-                arguments("username4", "username4@email.com", "password4"),
-                arguments("username5", "username5@email.com", "password5")
+            arguments("username2", "username2@email.com", "password2"),
+            arguments("username3", "username3@email.com", "password3"),
+            arguments("username4", "username4@email.com", "password4"),
+            arguments("username5", "username5@email.com", "password5")
         );
     }
 
@@ -246,36 +246,36 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(201, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
-                }
+            () -> assertEquals(201, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithExistingUsernameReturnsView() {
         return Stream.of(
-                arguments("username", "username2@email.com", "password"),
-                arguments("username", "username2@email.com", "password2"),
-                arguments("username", "username3@email.com", "password2"),
-                arguments("username", "username3@email.com", "password3")
+            arguments("username", "username2@email.com", "password"),
+            arguments("username", "username2@email.com", "password2"),
+            arguments("username", "username3@email.com", "password2"),
+            arguments("username", "username3@email.com", "password3")
         );
     }
 
@@ -294,36 +294,36 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(409, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Username is already in use!</span>"));
-                }
+            () -> assertEquals(409, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Username is already in use!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithExistingEmailReturnsView() {
         return Stream.of(
-                arguments("username2", "username@email.com", "password"),
-                arguments("username2", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password3")
+            arguments("username2", "username@email.com", "password"),
+            arguments("username2", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password3")
         );
     }
 
@@ -342,36 +342,36 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(409, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Email is already in use!</span>"));
-                }
+            () -> assertEquals(409, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Email is already in use!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithNonExistingUserSavesUser() {
         return Stream.of(
-                arguments("username2", "username2@email.com", "password2"),
-                arguments("username3", "username3@email.com", "password3"),
-                arguments("username4", "username4@email.com", "password4"),
-                arguments("username5", "username5@email.com", "password5")
+            arguments("username2", "username2@email.com", "password2"),
+            arguments("username3", "username3@email.com", "password3"),
+            arguments("username4", "username4@email.com", "password4"),
+            arguments("username5", "username5@email.com", "password5")
         );
     }
 
@@ -392,11 +392,11 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -404,53 +404,53 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertTrue(userRepository.existsByUsername(username)),
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertNotNull(persistenceUser.getId()),
-                            () -> assertEquals(username, persistenceUser.getUsername()),
-                            () -> assertEquals(email, persistenceUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
-                            },
-                            () -> assertFalse(persistenceUser.isDisabled()),
-                            () -> assertEquals(Role.USER, persistenceUser.getRole()),
-                            () -> assertNotNull(persistenceUser.getCreatedOn()),
-                            () -> assertNull(persistenceUser.getLastLogin())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertNotNull(cacheUser.getId()),
-                            () -> assertEquals(username, cacheUser.getUsername()),
-                            () -> assertEquals(email, cacheUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
-                            },
-                            () -> assertFalse(cacheUser.isDisabled()),
-                            () -> assertEquals(Role.USER, cacheUser.getRole()),
-                            () -> assertNotNull(cacheUser.getCreatedOn()),
-                            () -> assertNull(cacheUser.getLastLogin())
-                    );
-                }
+            () -> assertTrue(userRepository.existsByUsername(username)),
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertNotNull(persistenceUser.getId()),
+                    () -> assertEquals(username, persistenceUser.getUsername()),
+                    () -> assertEquals(email, persistenceUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
+                    },
+                    () -> assertFalse(persistenceUser.isDisabled()),
+                    () -> assertEquals(Role.USER, persistenceUser.getRole()),
+                    () -> assertNotNull(persistenceUser.getCreatedOn()),
+                    () -> assertNull(persistenceUser.getLastLogin())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertNotNull(cacheUser.getId()),
+                    () -> assertEquals(username, cacheUser.getUsername()),
+                    () -> assertEquals(email, cacheUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
+                    },
+                    () -> assertFalse(cacheUser.isDisabled()),
+                    () -> assertEquals(Role.USER, cacheUser.getRole()),
+                    () -> assertNotNull(cacheUser.getCreatedOn()),
+                    () -> assertNull(cacheUser.getLastLogin())
+                );
+            }
         );
     }
 
     private static Stream<Arguments> callWithExistingUsernameDoesNotSaveUser() {
         return Stream.of(
-                arguments("username", "username2@email.com", "password"),
-                arguments("username", "username2@email.com", "password2"),
-                arguments("username", "username3@email.com", "password2"),
-                arguments("username", "username3@email.com", "password3")
+            arguments("username", "username2@email.com", "password"),
+            arguments("username", "username2@email.com", "password2"),
+            arguments("username", "username3@email.com", "password2"),
+            arguments("username", "username3@email.com", "password3")
         );
     }
 
@@ -471,11 +471,11 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -483,24 +483,24 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertFalse(userRepository.existsByEmail(email)),
-                () -> assertNull(userRepository.findByEmail(email)),
-                () -> assertThrows(NoResultException.class,
-                        () -> query.getSingleResult()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNull(cacheUser);
-                }
+            () -> assertFalse(userRepository.existsByEmail(email)),
+            () -> assertNull(userRepository.findByEmail(email)),
+            () -> assertThrows(NoResultException.class,
+                () -> query.getSingleResult()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNull(cacheUser);
+            }
         );
     }
 
     private static Stream<Arguments> callWithExistingEmailDoesNotSaveUser() {
         return Stream.of(
-                arguments("username2", "username@email.com", "password"),
-                arguments("username2", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password2"),
-                arguments("username3", "username@email.com", "password3")
+            arguments("username2", "username@email.com", "password"),
+            arguments("username2", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password3")
         );
     }
 
@@ -519,11 +519,11 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         assertFalse(userRepository.existsByUsername(username));
     }

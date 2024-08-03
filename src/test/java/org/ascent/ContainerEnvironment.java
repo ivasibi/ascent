@@ -36,8 +36,8 @@ public abstract class ContainerEnvironment {
     public final static String redisPassword = "test";
 
     public static GenericContainer<?> redisContainer = new GenericContainer<>(redisImage)
-            .withExposedPorts(6379)
-            .withCommand("redis-server --requirepass " + redisPassword);
+        .withExposedPorts(6379)
+        .withCommand("redis-server --requirepass " + redisPassword);
 
     static {
         mySQLContainer.start();

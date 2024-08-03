@@ -145,31 +145,31 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(persistenceUser.getId(), cacheUser.getId()),
-                            () -> assertEquals(persistenceUser.getUsername(), cacheUser.getUsername()),
-                            () -> assertEquals(persistenceUser.getEmail(), cacheUser.getEmail()),
-                            () -> assertEquals(persistenceUser.getPassword(), cacheUser.getPassword()),
-                            () -> assertEquals(persistenceUser.isDisabled(), cacheUser.isDisabled()),
-                            () -> assertEquals(persistenceUser.getRole(), cacheUser.getRole()),
-                            () -> {
-                                Instant persistenceUserCreatedOn = persistenceUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
-                                Instant cacheUserCreatedOn = cacheUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
-                                assertEquals(0, persistenceUserCreatedOn.compareTo(cacheUserCreatedOn));
-                            },
-                            () -> {
-                                Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                                Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                                assertEquals(0, persistenceUserLastLogin.compareTo(cacheUserLastLogin));
-                            }
-                    );
-                }
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(persistenceUser.getId(), cacheUser.getId()),
+                    () -> assertEquals(persistenceUser.getUsername(), cacheUser.getUsername()),
+                    () -> assertEquals(persistenceUser.getEmail(), cacheUser.getEmail()),
+                    () -> assertEquals(persistenceUser.getPassword(), cacheUser.getPassword()),
+                    () -> assertEquals(persistenceUser.isDisabled(), cacheUser.isDisabled()),
+                    () -> assertEquals(persistenceUser.getRole(), cacheUser.getRole()),
+                    () -> {
+                        Instant persistenceUserCreatedOn = persistenceUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
+                        Instant cacheUserCreatedOn = cacheUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, persistenceUserCreatedOn.compareTo(cacheUserCreatedOn));
+                    },
+                    () -> {
+                        Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, persistenceUserLastLogin.compareTo(cacheUserLastLogin));
+                    }
+                );
+            }
         );
     }
 
@@ -191,22 +191,22 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertThrows(NoResultException.class,
-                        () -> query.getSingleResult()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNull(cacheUser);
-                }
+            () -> assertThrows(NoResultException.class,
+                () -> query.getSingleResult()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNull(cacheUser);
+            }
         );
     }
 
     private static Stream<Arguments> checkIfSavingUserPersistsItAndUpdatesEmailCache() {
         return Stream.of(
-                arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
-                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
-                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
+            arguments("username5", "username5@email.com", "password5", true, Role.USER),
+            arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+            arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+            arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -238,21 +238,21 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertEquals(disabled, persistenceUser.isDisabled())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(disabled, cacheUser.isDisabled())
-                    );
-                }
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertEquals(disabled, persistenceUser.isDisabled())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(disabled, cacheUser.isDisabled())
+                );
+            }
         );
 
         user.setDisabled(!user.isDisabled());
@@ -263,30 +263,30 @@ public class UserRepositoryTest extends ContainerEnvironment {
         entityManager.clear();
 
         assertAll(
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertEquals(!disabled, persistenceUser.isDisabled())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(!disabled, cacheUser.isDisabled())
-                    );
-                }
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertEquals(!disabled, persistenceUser.isDisabled())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(!disabled, cacheUser.isDisabled())
+                );
+            }
         );
     }
 
     private static Stream<Arguments> checkIfSavingUserRestoresEmailCacheTTL() {
         return Stream.of(
-                arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
-                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
-                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
+            arguments("username5", "username5@email.com", "password5", true, Role.USER),
+            arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+            arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+            arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -315,27 +315,27 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
-                    );
-                }
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
+                );
+            }
         );
 
         redisTemplate.expire(cacheKey, 10, TimeUnit.SECONDS);
 
         assertAll(
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= 0),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= 10)
-                    );
-                }
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= 0),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= 10)
+                );
+            }
         );
 
         user.setDisabled(!user.isDisabled());
@@ -344,23 +344,23 @@ public class UserRepositoryTest extends ContainerEnvironment {
         userRepository.flush();
 
         assertAll(
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
-                    );
-                }
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
+                );
+            }
         );
     }
 
     private static Stream<Arguments> checkIfDeletingUserRemovesItAndUpdatesEmailCache() {
         return Stream.of(
-                arguments("username5", "username5@email.com", "password5", true, Role.USER),
-                arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
-                arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
-                arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
+            arguments("username5", "username5@email.com", "password5", true, Role.USER),
+            arguments("username6", "username6@email.com", "password6", false, Role.EDITOR),
+            arguments("username7", "username7@email.com", "password7", true, Role.MODERATOR),
+            arguments("username8", "username8@email.com", "password8", false, Role.ADMIN)
         );
     }
 
@@ -392,15 +392,15 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                }
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+            }
         );
 
         userRepository.delete(user);
@@ -409,13 +409,13 @@ public class UserRepositoryTest extends ContainerEnvironment {
         entityManager.clear();
 
         assertAll(
-                () -> assertThrows(NoResultException.class,
-                        () -> query.getSingleResult()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNull(cacheUser);
-                }
+            () -> assertThrows(NoResultException.class,
+                () -> query.getSingleResult()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNull(cacheUser);
+            }
         );
     }
 
@@ -473,10 +473,10 @@ public class UserRepositoryTest extends ContainerEnvironment {
 
     private static Stream<Arguments> checkIfSavedUserIsReturnedByFindByEmail() {
         return Stream.of(
-                arguments("username", "username@email.com", "password", true, Role.USER),
-                arguments("username2", "username2@email.com", "password2", false, Role.EDITOR),
-                arguments("username3", "username3@email.com", "password3", true, Role.MODERATOR),
-                arguments("username4", "username4@email.com", "password4", false, Role.ADMIN)
+            arguments("username", "username@email.com", "password", true, Role.USER),
+            arguments("username2", "username2@email.com", "password2", false, Role.EDITOR),
+            arguments("username3", "username3@email.com", "password3", true, Role.MODERATOR),
+            arguments("username4", "username4@email.com", "password4", false, Role.ADMIN)
         );
     }
 
@@ -489,24 +489,24 @@ public class UserRepositoryTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isRunning());
 
         assertAll(
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User user = userRepository.findByEmail(email);
-                    assertAll(
-                            () -> assertNotNull(user.getId()),
-                            () -> assertEquals(username, user.getUsername()),
-                            () -> assertEquals(email, user.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, user.getPassword()));
-                            },
-                            () -> assertEquals(disabled, user.isDisabled()),
-                            () -> assertEquals(role, user.getRole()),
-                            () -> assertNotNull(user.getCreatedOn()),
-                            () -> assertNotNull(user.getLastLogin()),
-                            () -> assertTrue(user.getCreatedOn().isBefore(user.getLastLogin()))
-                    );
-                }
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User user = userRepository.findByEmail(email);
+                assertAll(
+                    () -> assertNotNull(user.getId()),
+                    () -> assertEquals(username, user.getUsername()),
+                    () -> assertEquals(email, user.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, user.getPassword()));
+                    },
+                    () -> assertEquals(disabled, user.isDisabled()),
+                    () -> assertEquals(role, user.getRole()),
+                    () -> assertNotNull(user.getCreatedOn()),
+                    () -> assertNotNull(user.getLastLogin()),
+                    () -> assertTrue(user.getCreatedOn().isBefore(user.getLastLogin()))
+                );
+            }
         );
     }
 
@@ -547,30 +547,30 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertNotNull(user),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(user.getId(), cacheUser.getId()),
-                            () -> assertEquals(user.getUsername(), cacheUser.getUsername()),
-                            () -> assertEquals(user.getEmail(), cacheUser.getEmail()),
-                            () -> assertEquals(user.getPassword(), cacheUser.getPassword()),
-                            () -> assertEquals(user.isDisabled(), cacheUser.isDisabled()),
-                            () -> assertEquals(user.getRole(), cacheUser.getRole()),
-                            () -> {
-                                Instant userCreatedOn = user.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
-                                Instant cacheUserCreatedOn = cacheUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
-                                assertEquals(0, userCreatedOn.compareTo(cacheUserCreatedOn));
-                            },
-                            () -> {
-                                Instant userLastLogin = user.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                                Instant cacheUserLastLogin = user.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                                assertEquals(0, userLastLogin.compareTo(cacheUserLastLogin));
-                            }
-                    );
-                }
+            () -> assertNotNull(user),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(user.getId(), cacheUser.getId()),
+                    () -> assertEquals(user.getUsername(), cacheUser.getUsername()),
+                    () -> assertEquals(user.getEmail(), cacheUser.getEmail()),
+                    () -> assertEquals(user.getPassword(), cacheUser.getPassword()),
+                    () -> assertEquals(user.isDisabled(), cacheUser.isDisabled()),
+                    () -> assertEquals(user.getRole(), cacheUser.getRole()),
+                    () -> {
+                        Instant userCreatedOn = user.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
+                        Instant cacheUserCreatedOn = cacheUser.getCreatedOn().truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, userCreatedOn.compareTo(cacheUserCreatedOn));
+                    },
+                    () -> {
+                        Instant userLastLogin = user.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        Instant cacheUserLastLogin = user.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                        assertEquals(0, userLastLogin.compareTo(cacheUserLastLogin));
+                    }
+                );
+            }
         );
     }
 
@@ -596,21 +596,21 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertNull(user),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNull(cacheUser);
-                }
+            () -> assertNull(user),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNull(cacheUser);
+            }
         );
     }
 
     private static Stream<Arguments> checkIfFindByEmailRetrievesSavedUserFromEmailCache() {
         return Stream.of(
-                arguments("username@email.com", true),
-                arguments("username2@email.com", false),
-                arguments("username3@email.com", true),
-                arguments("username4@email.com", false)
+            arguments("username@email.com", true),
+            arguments("username2@email.com", false),
+            arguments("username3@email.com", true),
+            arguments("username4@email.com", false)
         );
     }
 
@@ -628,21 +628,21 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertEquals(disabled, persistenceUser.isDisabled())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(disabled, cacheUser.isDisabled())
-                    );
-                }
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertEquals(disabled, persistenceUser.isDisabled())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(disabled, cacheUser.isDisabled())
+                );
+            }
         );
 
         entityTransaction.begin();
@@ -656,28 +656,28 @@ public class UserRepositoryTest extends ContainerEnvironment {
         entityManager.clear();
 
         assertAll(
-                () -> {
-                    User user = userRepository.findByEmail(email);
-                    assertNotNull(user);
-                    assertAll(
-                            () -> assertEquals(disabled, user.isDisabled())
-                    );
-                },
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertEquals(!disabled, persistenceUser.isDisabled())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertEquals(disabled, cacheUser.isDisabled())
-                    );
-                }
+            () -> {
+                User user = userRepository.findByEmail(email);
+                assertNotNull(user);
+                assertAll(
+                    () -> assertEquals(disabled, user.isDisabled())
+                );
+            },
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertEquals(!disabled, persistenceUser.isDisabled())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertEquals(disabled, cacheUser.isDisabled())
+                );
+            }
         );
     }
 
@@ -696,41 +696,41 @@ public class UserRepositoryTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
-                    );
-                }
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= ((Integer.parseInt(cacheTTL) / 1000) - 10)),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= (Integer.parseInt(cacheTTL) / 1000))
+                );
+            }
         );
 
         redisTemplate.expire(cacheKey, 10, TimeUnit.SECONDS);
 
         assertAll(
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= 0),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= 10)
-                    );
-                }
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= 0),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= 10)
+                );
+            }
         );
 
         User user = userRepository.findByEmail(email);
 
         assertAll(
-                () -> assertNotNull(user),
-                () -> {
-                    Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
-                    assertNotNull(cacheKeyTTL);
-                    assertAll(
-                            () -> assertTrue(cacheKeyTTL.intValue() >= 0),
-                            () -> assertTrue(cacheKeyTTL.intValue() <= 10)
-                    );
-                }
+            () -> assertNotNull(user),
+            () -> {
+                Long cacheKeyTTL = redisTemplate.getExpire(cacheKey);
+                assertNotNull(cacheKeyTTL);
+                assertAll(
+                    () -> assertTrue(cacheKeyTTL.intValue() >= 0),
+                    () -> assertTrue(cacheKeyTTL.intValue() <= 10)
+                );
+            }
         );
     }
 }

@@ -25,7 +25,7 @@ public class RegisterManager {
             throw new UsernameAlreadyInUseException();
         }
 
-        if(userRepository.existsByEmail(registerRequest.getEmail())) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new EmailAlreadyInUseException();
         }
 

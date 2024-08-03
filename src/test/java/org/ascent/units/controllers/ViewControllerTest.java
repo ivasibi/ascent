@@ -38,25 +38,25 @@ public class ViewControllerTest {
     @Test
     public void callIndexWithPostHTTPMethodReturnsMethodNotAllowed() throws Exception {
         mockMvc.perform(
-                        post("/"))
-                .andDo(print())
-                .andExpect(status().isMethodNotAllowed());
+                post("/"))
+            .andDo(print())
+            .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void callIndexReturnsOkAndIndex() throws Exception {
         mockMvc.perform(
-                        get("/"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(view().name("index"));
+                get("/"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(view().name("index"));
     }
 
     @Test
     public void callIndexThenCallsViewManagerNavbarMethod() throws Exception {
         mockMvc.perform(
-                        get("/"))
-                .andDo(print());
+                get("/"))
+            .andDo(print());
 
         verify(mockViewManager, times(1)).navbar(any(HttpSession.class), any(ModelAndView.class));
     }
@@ -64,25 +64,25 @@ public class ViewControllerTest {
     @Test
     public void callNavbarWithPostHTTPMethodReturnsMethodNotAllowed() throws Exception {
         mockMvc.perform(
-                        post("/navbar"))
-                .andDo(print())
-                .andExpect(status().isMethodNotAllowed());
+                post("/navbar"))
+            .andDo(print())
+            .andExpect(status().isMethodNotAllowed());
     }
 
     @Test
     public void callNavbarReturnsOkAndNavbar() throws Exception {
         mockMvc.perform(
-                        get("/navbar"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(view().name("fragments/navbar :: navbar"));
+                get("/navbar"))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(view().name("fragments/navbar :: navbar"));
     }
 
     @Test
     public void callNavbarThenCallsViewManagerNavbarMethod() throws Exception {
         mockMvc.perform(
-                        get("/navbar"))
-                .andDo(print());
+                get("/navbar"))
+            .andDo(print());
 
         verify(mockViewManager, times(1)).navbar(any(HttpSession.class), any(ModelAndView.class));
     }

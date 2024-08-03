@@ -169,17 +169,17 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("role", role);
 
         mockMvc.perform(
-                        get("/")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(3))
-                .andExpect(model().attribute("logged", true))
-                .andExpect(model().attribute("username", "username"))
-                .andExpect(model().attribute("role", role))
-                .andExpect(view().name("index"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>")));
+                get("/")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(3))
+            .andExpect(model().attribute("logged", true))
+            .andExpect(model().attribute("username", "username"))
+            .andExpect(model().attribute("role", role))
+            .andExpect(view().name("index"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>")));
     }
 
     @Test
@@ -188,16 +188,16 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("logged", false);
 
         mockMvc.perform(
-                        get("/")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(1))
-                .andExpect(model().attribute("logged", false))
-                .andExpect(view().name("index"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
+                get("/")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(1))
+            .andExpect(model().attribute("logged", false))
+            .andExpect(view().name("index"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
     }
 
     @Test
@@ -206,24 +206,24 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("logged", null);
 
         mockMvc.perform(
-                        get("/")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(1))
-                .andExpect(model().attribute("logged", false))
-                .andExpect(view().name("index"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
+                get("/")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(1))
+            .andExpect(model().attribute("logged", false))
+            .andExpect(view().name("index"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
     }
 
     private static Stream<Arguments> callIndexWithLoggedUserReturnsView() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -241,11 +241,11 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
@@ -254,25 +254,25 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         responseSpec = serverTestClient.get()
-                .uri("/")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/")
+                .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>"));
+            }
         );
     }
 
@@ -282,26 +282,26 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isRunning());
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
-                .uri("/")
-                    .cookie(sessionCookieName, "session")
-                .exchange();
+            .uri("/")
+                .cookie(sessionCookieName, "session")
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>"));
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>"));
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>"));
+            }
         );
     }
 
@@ -318,17 +318,17 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("role", role);
 
         mockMvc.perform(
-                        get("/navbar")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(3))
-                .andExpect(model().attribute("logged", true))
-                .andExpect(model().attribute("username", "username"))
-                .andExpect(model().attribute("role", role))
-                .andExpect(view().name("fragments/navbar :: navbar"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>")));
+                get("/navbar")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(3))
+            .andExpect(model().attribute("logged", true))
+            .andExpect(model().attribute("username", "username"))
+            .andExpect(model().attribute("role", role))
+            .andExpect(view().name("fragments/navbar :: navbar"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>")));
     }
 
     @Test
@@ -337,16 +337,16 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("logged", false);
 
         mockMvc.perform(
-                        get("/navbar")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(1))
-                .andExpect(model().attribute("logged", false))
-                .andExpect(view().name("fragments/navbar :: navbar"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
+                get("/navbar")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(1))
+            .andExpect(model().attribute("logged", false))
+            .andExpect(view().name("fragments/navbar :: navbar"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
     }
 
     @Test
@@ -355,24 +355,24 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         mockHttpSession.setAttribute("logged", null);
 
         mockMvc.perform(
-                        get("/navbar")
-                                .session(mockHttpSession))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(1))
-                .andExpect(model().attribute("logged", false))
-                .andExpect(view().name("fragments/navbar :: navbar"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
+                get("/navbar")
+                    .session(mockHttpSession))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(1))
+            .andExpect(model().attribute("logged", false))
+            .andExpect(view().name("fragments/navbar :: navbar"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>")))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>")));
     }
 
     private static Stream<Arguments> callNavbarWithLoggedUserReturnsView() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -390,11 +390,11 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+            .header("HX-Request", "true")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(loginRequestJson)
+            .exchange();
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
@@ -403,25 +403,25 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         responseSpec = serverTestClient.get()
-                .uri("/navbar")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/navbar")
+            .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Logout</span>"));
+            }
         );
     }
 
@@ -431,26 +431,26 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         assumeTrue(redisContainer.isRunning());
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
-                .uri("/navbar")
-                    .cookie(sessionCookieName, "session")
-                .exchange();
+            .uri("/navbar")
+                .cookie(sessionCookieName, "session")
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>"));
-                    assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Login</span>"));
+                assertTrue(responseBody.contains("<span class=\"ms-1 d-none d-sm-inline\">Register</span>"));
+            }
         );
     }
 }

@@ -93,8 +93,8 @@ public class RegisterFunctionalityTest extends ContainerEnvironment {
 
     private static Stream<Arguments> registerNewUser() {
         return Stream.of(
-                arguments("username", "username@email.com", "password"),
-                arguments("username2", "username2@email.com", "password2")
+            arguments("username", "username@email.com", "password"),
+            arguments("username2", "username2@email.com", "password2")
         );
     }
 
@@ -116,11 +116,11 @@ public class RegisterFunctionalityTest extends ContainerEnvironment {
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
         serverTestClient.post()
-                .uri("/register")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(registerRequestJson)
-                .exchange();
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -128,44 +128,44 @@ public class RegisterFunctionalityTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assertTrue(userRepository.existsByUsername(username)),
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> assertNotNull(persistenceUser.getId()),
-                            () -> assertEquals(username, persistenceUser.getUsername()),
-                            () -> assertEquals(email, persistenceUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
-                            },
-                            () -> assertFalse(persistenceUser.isDisabled()),
-                            () -> assertEquals(Role.USER, persistenceUser.getRole()),
-                            () -> assertNotNull(persistenceUser.getCreatedOn()),
-                            () -> assertNull(persistenceUser.getLastLogin())
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> assertNotNull(cacheUser.getId()),
-                            () -> assertEquals(username, cacheUser.getUsername()),
-                            () -> assertEquals(email, cacheUser.getEmail()),
-                            () -> {
-                                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-                                assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
-                            },
-                            () -> assertFalse(cacheUser.isDisabled()),
-                            () -> assertEquals(Role.USER, cacheUser.getRole()),
-                            () -> assertNotNull(cacheUser.getCreatedOn()),
-                            () -> assertNull(cacheUser.getLastLogin())
-                    );
-                }
+            () -> assertTrue(userRepository.existsByUsername(username)),
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> assertNotNull(persistenceUser.getId()),
+                    () -> assertEquals(username, persistenceUser.getUsername()),
+                    () -> assertEquals(email, persistenceUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, persistenceUser.getPassword()));
+                    },
+                    () -> assertFalse(persistenceUser.isDisabled()),
+                    () -> assertEquals(Role.USER, persistenceUser.getRole()),
+                    () -> assertNotNull(persistenceUser.getCreatedOn()),
+                    () -> assertNull(persistenceUser.getLastLogin())
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> assertNotNull(cacheUser.getId()),
+                    () -> assertEquals(username, cacheUser.getUsername()),
+                    () -> assertEquals(email, cacheUser.getEmail()),
+                    () -> {
+                        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+                        assertTrue(bCryptPasswordEncoder.matches(password, cacheUser.getPassword()));
+                    },
+                    () -> assertFalse(cacheUser.isDisabled()),
+                    () -> assertEquals(Role.USER, cacheUser.getRole()),
+                    () -> assertNotNull(cacheUser.getCreatedOn()),
+                    () -> assertNull(cacheUser.getLastLogin())
+                );
+            }
         );
     }
 }

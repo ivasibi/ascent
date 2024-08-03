@@ -6,9 +6,9 @@ Each test configuration runs all tests present in the directory, as shown in the
 
 ### Configurations
 
-|               Name               |                              Directory                              |
-|:--------------------------------:|:-------------------------------------------------------------------:|
-|      [ :gear: ] `AllTests`       |               [ :open_file_folder: ] `src/test/java`                |
-| [ :gear: ] `FunctionalityTests`  |  [ :open_file_folder: ] `src/test/java/org/ascent/functionalities`  |
-|  [ :gear: ] `IntegrationTests`   |   [ :open_file_folder: ] `src/test/java/org/ascent/integrations`    |
-|      [ :gear: ] `UnitTests`      |       [ :open_file_folder: ] `src/test/java/org/ascent/units`       |
+|              Name               |                             Directory                             |
+|:-------------------------------:|:-----------------------------------------------------------------:|
+|      [ :gear: ] `AllTests`      |              [ :open_file_folder: ] `src/test/java`               |
+| [ :gear: ] `FunctionalityTests` | [ :open_file_folder: ] `src/test/java/org/ascent/functionalities` |
+|  [ :gear: ] `IntegrationTests`  |  [ :open_file_folder: ] `src/test/java/org/ascent/integrations`   |
+|     [ :gear: ] `UnitTests`      |      [ :open_file_folder: ] `src/test/java/org/ascent/units`      |

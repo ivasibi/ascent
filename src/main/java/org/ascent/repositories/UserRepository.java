@@ -11,13 +11,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Override
     @Caching(put = {
-            @CachePut(value = ":users:email", key = "#entity.email")
+        @CachePut(value = ":users:email", key = "#entity.email")
     })
     <S extends User> S save(S entity);
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = ":users:email", key = "#entity.email")
+        @CacheEvict(value = ":users:email", key = "#entity.email")
     })
     void delete(User entity);
 

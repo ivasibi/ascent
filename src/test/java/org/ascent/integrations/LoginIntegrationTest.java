@@ -167,10 +167,10 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     private static Stream<Arguments> callWithExistingUserReturnsOkAndSuccess() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -185,23 +185,23 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: success"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/login_response :: success"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Success!</span>")));
     }
 
     private static Stream<Arguments> callWithNonExistingUserReturnsUnauthorizedAndInvalidCredentials() {
         return Stream.of(
-                arguments("username6@email.com", "password6"),
-                arguments("username7@email.com", "password7"),
-                arguments("username8@email.com", "password8")
+            arguments("username6@email.com", "password6"),
+            arguments("username7@email.com", "password7"),
+            arguments("username8@email.com", "password8")
         );
     }
 
@@ -216,22 +216,22 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: invalid_credentials"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/login_response :: invalid_credentials"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
     }
 
     private static Stream<Arguments> callWithDisabledUserReturnsUnauthorizedAndDisabledUser() {
         return Stream.of(
-                arguments("username5@email.com", "password5")
+            arguments("username5@email.com", "password5")
         );
     }
 
@@ -246,25 +246,25 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: user_disabled"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">User disabled!</span>")));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/login_response :: user_disabled"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">User disabled!</span>")));
     }
 
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsUnauthorizedAndInvalidCredentials() {
         return Stream.of(
-                arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3"),
-                arguments("username3@email.com", "password4"),
-                arguments("username4@email.com", "password5")
+            arguments("username@email.com", "password2"),
+            arguments("username2@email.com", "password3"),
+            arguments("username3@email.com", "password4"),
+            arguments("username4@email.com", "password5")
         );
     }
 
@@ -279,25 +279,25 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         mockMvc.perform(
-                        post("/login")
-                                .header("HX-Request", "true")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(loginRequestJson))
-                .andDo(print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(model().size(0))
-                .andExpect(view().name("responses/login_response :: invalid_credentials"))
-                .andExpect(content().contentType("text/html;charset=UTF-8"))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print())
+            .andExpect(status().isUnauthorized())
+            .andExpect(model().size(0))
+            .andExpect(view().name("responses/login_response :: invalid_credentials"))
+            .andExpect(content().contentType("text/html;charset=UTF-8"))
+            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+            .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
     }
 
     private static Stream<Arguments> callWithExistingUserReturnsView() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -317,11 +317,11 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
@@ -329,29 +329,29 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(200, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseCookies);
-                    assertEquals(1, responseCookies.size());
-                    assertTrue(responseCookies.containsKey(sessionCookieName));
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
-                }
+            () -> assertEquals(200, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseCookies);
+                assertEquals(1, responseCookies.size());
+                assertTrue(responseCookies.containsKey(sessionCookieName));
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Success!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithNonExistingUserReturnsView() {
         return Stream.of(
-                arguments("username6@email.com", "password6"),
-                arguments("username7@email.com", "password7"),
-                arguments("username8@email.com", "password8")
+            arguments("username6@email.com", "password6"),
+            arguments("username7@email.com", "password7"),
+            arguments("username8@email.com", "password8")
         );
     }
 
@@ -371,11 +371,11 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
@@ -383,26 +383,26 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(401, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseCookies);
-                    assertEquals(0, responseCookies.size());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
-                }
+            () -> assertEquals(401, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseCookies);
+                assertEquals(0, responseCookies.size());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithDisabledUserReturnsView() {
         return Stream.of(
-                arguments("username5@email.com", "password5")
+            arguments("username5@email.com", "password5")
         );
     }
 
@@ -422,11 +422,11 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
@@ -434,29 +434,29 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(401, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseCookies);
-                    assertEquals(0, responseCookies.size());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">User disabled!</span>"));
-                }
+            () -> assertEquals(401, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseCookies);
+                assertEquals(0, responseCookies.size());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">User disabled!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsView() {
         return Stream.of(
-                arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3"),
-                arguments("username3@email.com", "password4"),
-                arguments("username4@email.com", "password5")
+            arguments("username@email.com", "password2"),
+            arguments("username2@email.com", "password3"),
+            arguments("username3@email.com", "password4"),
+            arguments("username4@email.com", "password5")
         );
     }
 
@@ -476,11 +476,11 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange();
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
         HttpHeaders responseHeaders = responseSpec.returnResult(String.class).getResponseHeaders();
@@ -488,29 +488,29 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String responseBody = responseSpec.expectBody(String.class).returnResult().getResponseBody();
 
         assertAll(
-                () -> assertEquals(401, responseStatusCode.value()),
-                () -> {
-                    Object contentType = responseHeaders.get("Content-Type");
-                    assertNotNull(contentType);
-                    assertEquals("[text/html;charset=UTF-8]", contentType.toString());
-                },
-                () -> {
-                    assertNotNull(responseCookies);
-                    assertEquals(0, responseCookies.size());
-                },
-                () -> {
-                    assertNotNull(responseBody);
-                    assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
-                }
+            () -> assertEquals(401, responseStatusCode.value()),
+            () -> {
+                Object contentType = responseHeaders.get("Content-Type");
+                assertNotNull(contentType);
+                assertEquals("[text/html;charset=UTF-8]", contentType.toString());
+            },
+            () -> {
+                assertNotNull(responseCookies);
+                assertEquals(0, responseCookies.size());
+            },
+            () -> {
+                assertNotNull(responseBody);
+                assertTrue(responseBody.contains("<span class=\"ms-1\">Invalid credentials!</span>"));
+            }
         );
     }
 
     private static Stream<Arguments> callWithExistingUserReturnsSessionAndUpdatesUser() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -532,12 +532,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -552,86 +552,86 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-                () -> assumeTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    assertAll(
-                            () -> {
-                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
-                                assertNotNull(sessionUsername);
-                                assertAll(
-                                        () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, persistenceUser.getUsername())
-                                );
-                            },
-                            () -> {
-                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
-                                assertNotNull(sessionRole);
-                                assertAll(
-                                        () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, persistenceUser.getRole())
-                                );
-                            },
-                            () -> assertNotEquals(lastLogin, persistenceUser.getLastLogin()),
-                            () -> {
-                                if (lastLogin != null) {
-                                    assertTrue(lastLogin.isBefore(persistenceUser.getLastLogin()));
-                                } else {
-                                    assertNotNull(persistenceUser.getLastLogin());
-                                }
-                            }
-                    );
-                },
-                () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
-                () -> {
-                    Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
-                    assertNotNull(sessionLogged);
-                    assertAll(
-                            () -> assertTrue(sessionLogged instanceof Boolean),
-                            () -> assertTrue((boolean) sessionLogged)
-                    );
-                },
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    assertAll(
-                            () -> {
-                                Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
-                                assertNotNull(sessionUsername);
-                                assertAll(
-                                        () -> assertTrue(sessionUsername instanceof String),
-                                        () -> assertEquals(sessionUsername, cacheUser.getUsername())
-                                );
-                            },
-                            () -> {
-                                Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
-                                assertNotNull(sessionRole);
-                                assertAll(
-                                        () -> assertTrue(sessionRole instanceof Role),
-                                        () -> assertEquals(sessionRole, cacheUser.getRole())
-                                );
-                            },
-                            () -> assertNotEquals(lastLogin, cacheUser.getLastLogin()),
-                            () -> {
-                                if (lastLogin != null) {
-                                    assertTrue(lastLogin.isBefore(cacheUser.getLastLogin()));
-                                } else {
-                                    assertNotNull(cacheUser.getLastLogin());
-                                }
-                            }
-                    );
-                }
+            () -> assumeTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                assertAll(
+                    () -> {
+                        Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                        assertNotNull(sessionUsername);
+                        assertAll(
+                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertEquals(sessionUsername, persistenceUser.getUsername())
+                        );
+                    },
+                    () -> {
+                        Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                        assertNotNull(sessionRole);
+                        assertAll(
+                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertEquals(sessionRole, persistenceUser.getRole())
+                        );
+                    },
+                    () -> assertNotEquals(lastLogin, persistenceUser.getLastLogin()),
+                    () -> {
+                        if (lastLogin != null) {
+                            assertTrue(lastLogin.isBefore(persistenceUser.getLastLogin()));
+                        } else {
+                            assertNotNull(persistenceUser.getLastLogin());
+                        }
+                    }
+                );
+            },
+            () -> assertEquals(6, redisTemplate.opsForHash().size(sessionKey)),
+            () -> {
+                Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
+                assertNotNull(sessionLogged);
+                assertAll(
+                    () -> assertTrue(sessionLogged instanceof Boolean),
+                    () -> assertTrue((boolean) sessionLogged)
+                );
+            },
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                assertAll(
+                    () -> {
+                        Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
+                        assertNotNull(sessionUsername);
+                        assertAll(
+                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertEquals(sessionUsername, cacheUser.getUsername())
+                        );
+                    },
+                    () -> {
+                        Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
+                        assertNotNull(sessionRole);
+                        assertAll(
+                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertEquals(sessionRole, cacheUser.getRole())
+                        );
+                    },
+                    () -> assertNotEquals(lastLogin, cacheUser.getLastLogin()),
+                    () -> {
+                        if (lastLogin != null) {
+                            assertTrue(lastLogin.isBefore(cacheUser.getLastLogin()));
+                        } else {
+                            assertNotNull(cacheUser.getLastLogin());
+                        }
+                    }
+                );
+            }
         );
     }
 
     private static Stream<Arguments> callWithNonExistingUserReturnsNoSession() {
         return Stream.of(
-                arguments("username6@email.com", "password6"),
-                arguments("username7@email.com", "password7"),
-                arguments("username8@email.com", "password8")
+            arguments("username6@email.com", "password6"),
+            arguments("username7@email.com", "password7"),
+            arguments("username8@email.com", "password8")
         );
     }
 
@@ -651,12 +651,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().doesNotExist(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().doesNotExist(sessionCookieName);
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -667,22 +667,22 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         assumeTrue(redisSessionKeys != null);
         assertAll(
-                () -> assertFalse(userRepository.existsByEmail(email)),
-                () -> assertNull(userRepository.findByEmail(email)),
-                () -> assertThrows(NoResultException.class,
-                        () -> query.getSingleResult()),
-                () -> assertTrue(redisSessionKeys.isEmpty()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNull(cacheUser);
-                }
+            () -> assertFalse(userRepository.existsByEmail(email)),
+            () -> assertNull(userRepository.findByEmail(email)),
+            () -> assertThrows(NoResultException.class,
+                () -> query.getSingleResult()),
+            () -> assertTrue(redisSessionKeys.isEmpty()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNull(cacheUser);
+            }
         );
     }
 
     private static Stream<Arguments> callWithDisabledUserReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
-                arguments("username5@email.com", "password5")
+            arguments("username5@email.com", "password5")
         );
     }
 
@@ -704,12 +704,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().doesNotExist(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().doesNotExist(sessionCookieName);
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -720,41 +720,41 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         assumeTrue(redisSessionKeys != null);
         assertAll(
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    if (lastLogin != null) {
-                        Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
-                        assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
-                    } else {
-                        assertNull(persistenceUser.getLastLogin());
-                    }
-                },
-                () -> assertTrue(redisSessionKeys.isEmpty()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    if (lastLogin != null) {
-                        Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
-                        assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
-                    } else {
-                        assertNull(cacheUser.getLastLogin());
-                    }
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                if (lastLogin != null) {
+                    Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                    Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                    assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
+                } else {
+                    assertNull(persistenceUser.getLastLogin());
                 }
+            },
+            () -> assertTrue(redisSessionKeys.isEmpty()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                if (lastLogin != null) {
+                    Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                    Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                    assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
+                } else {
+                    assertNull(cacheUser.getLastLogin());
+                }
+            }
         );
     }
 
     private static Stream<Arguments> callWithNonMatchingPasswordReturnsNoSessionAndDoesNotUpdateUser() {
         return Stream.of(
-                arguments("username@email.com", "password2"),
-                arguments("username2@email.com", "password3"),
-                arguments("username3@email.com", "password4"),
-                arguments("username4@email.com", "password5")
+            arguments("username@email.com", "password2"),
+            arguments("username2@email.com", "password3"),
+            arguments("username3@email.com", "password4"),
+            arguments("username4@email.com", "password5")
         );
     }
 
@@ -776,12 +776,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().doesNotExist(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().doesNotExist(sessionCookieName);
 
         TypedQuery<User> query = entityManager.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class);
         query.setParameter("email", email);
@@ -792,32 +792,32 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         assumeTrue(redisSessionKeys != null);
         assertAll(
-                () -> assertTrue(userRepository.existsByEmail(email)),
-                () -> assertNotNull(userRepository.findByEmail(email)),
-                () -> {
-                    User persistenceUser = query.getSingleResult();
-                    assertNotNull(persistenceUser);
-                    if (lastLogin != null) {
-                        Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
-                        assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
-                    } else {
-                        assertNull(persistenceUser.getLastLogin());
-                    }
-                },
-                () -> assertTrue(redisSessionKeys.isEmpty()),
-                () -> {
-                    Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
-                    User cacheUser = (User) cacheObject;
-                    assertNotNull(cacheUser);
-                    if (lastLogin != null) {
-                        Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
-                        Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
-                        assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
-                    } else {
-                        assertNull(cacheUser.getLastLogin());
-                    }
+            () -> assertTrue(userRepository.existsByEmail(email)),
+            () -> assertNotNull(userRepository.findByEmail(email)),
+            () -> {
+                User persistenceUser = query.getSingleResult();
+                assertNotNull(persistenceUser);
+                if (lastLogin != null) {
+                    Instant persistenceUserLastLogin = persistenceUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                    Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                    assertEquals(0, truncatedLastLogin.compareTo(persistenceUserLastLogin));
+                } else {
+                    assertNull(persistenceUser.getLastLogin());
                 }
+            },
+            () -> assertTrue(redisSessionKeys.isEmpty()),
+            () -> {
+                Object cacheObject = redisTemplate.opsForValue().get(cacheKey);
+                User cacheUser = (User) cacheObject;
+                assertNotNull(cacheUser);
+                if (lastLogin != null) {
+                    Instant cacheUserLastLogin = cacheUser.getLastLogin().truncatedTo(ChronoUnit.SECONDS);
+                    Instant truncatedLastLogin = lastLogin.truncatedTo(ChronoUnit.SECONDS);
+                    assertEquals(0, truncatedLastLogin.compareTo(cacheUserLastLogin));
+                } else {
+                    assertNull(cacheUser.getLastLogin());
+                }
+            }
         );
     }
 
@@ -846,12 +846,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -865,24 +865,24 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         assertNotNull(sessionMaxInactiveInterval);
 
         assertAll(
-                () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
-                () -> {
-                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
-                    assertNotNull(sessionKeyTTL);
-                    assertAll(
-                            () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
-                            () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
-                    );
-                }
+            () -> assertEquals(maxInactiveInterval, sessionMaxInactiveInterval),
+            () -> {
+                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                assertNotNull(sessionKeyTTL);
+                assertAll(
+                    () -> assertTrue(sessionKeyTTL.intValue() >= maxInactiveInterval - 10),
+                    () -> assertTrue(sessionKeyTTL.intValue() <= maxInactiveInterval)
+                );
+            }
         );
     }
 
     private static Stream<Arguments> callAnywhereWithSessionRestoresInactiveInterval() {
         return Stream.of(
-                arguments("username@email.com", "password"),
-                arguments("username2@email.com", "password2"),
-                arguments("username3@email.com", "password3"),
-                arguments("username4@email.com", "password4")
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
         );
     }
 
@@ -902,12 +902,12 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
-                .uri("/login")
-                    .header("HX-Request", "true")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(loginRequestJson)
-                .exchange()
-                .expectCookie().exists(sessionCookieName);
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange()
+            .expectCookie().exists(sessionCookieName);
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
@@ -921,27 +921,27 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         assertNotNull(sessionMaxInactiveInterval);
 
         assertAll(
-                () -> {
-                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
-                    assertNotNull(sessionKeyTTL);
-                    assertAll(
-                            () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
-                            () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
-                    );
-                }
+            () -> {
+                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                assertNotNull(sessionKeyTTL);
+                assertAll(
+                    () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
+                    () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
+                );
+            }
         );
 
         redisTemplate.expire(sessionKey, 10, TimeUnit.SECONDS);
 
         assertAll(
-                () -> {
-                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
-                    assertNotNull(sessionKeyTTL);
-                    assertAll(
-                            () -> assertTrue(sessionKeyTTL.intValue() >= 0),
-                            () -> assertTrue(sessionKeyTTL.intValue() <= 10)
-                    );
-                }
+            () -> {
+                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                assertNotNull(sessionKeyTTL);
+                assertAll(
+                    () -> assertTrue(sessionKeyTTL.intValue() >= 0),
+                    () -> assertTrue(sessionKeyTTL.intValue() <= 10)
+                );
+            }
         );
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
@@ -951,19 +951,19 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
         serverTestClient.get()
-                .uri("/")
-                    .cookie(sessionCookieName, sessionCookie)
-                .exchange();
+            .uri("/")
+                .cookie(sessionCookieName, sessionCookie)
+            .exchange();
 
         assertAll(
-                () -> {
-                    Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
-                    assertNotNull(sessionKeyTTL);
-                    assertAll(
-                            () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
-                            () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
-                    );
-                }
+            () -> {
+                Long sessionKeyTTL = redisTemplate.getExpire(sessionKey);
+                assertNotNull(sessionKeyTTL);
+                assertAll(
+                    () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
+                    () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
+                );
+            }
         );
     }
 }
