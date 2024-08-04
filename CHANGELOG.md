@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.0.6] - 2024-08-04 [UNRELEASED]
+
+### Added
+
+- [ :gear: ] Add `.wslconfig` file
+- [ :gear: ] Add `.editorconfig` file
+- [ :test_tube: ] Add `Session Timeout` tests ([`742790a0`](https://github.com/ivasibi/ascent/commit/742790a0))
+- [ :rocket: ] Add `EDITOR` and `MODERATOR` roles
+- [ :gear: ] Add `run` and `test` configurations
+- [ :book: ] Add `TESTING` documentation
+- [ :book: ] Add `DEVELOPING` documentation
+- [ :whale2: ] Add `compose-dev.yml` for development ([`ff3a4da7`](https://github.com/ivasibi/ascent/commit/ff3a4da7))
+
+### Changed
+
+- [ :rocket: ] Set `Session Timeout` based on role
+- [ :package: ] Bump `HTMX` from 1.9.11 to 1.9.12 ([`41176fa5`](https://github.com/ivasibi/ascent/commit/41176fa5))
+- [ :package: ] Bump `Font Awesome` from 6.5.1 to 6.5.2 ([`ad04a42c`](https://github.com/ivasibi/ascent/commit/ad04a42c))
+- [ :package: ] Bump `Spring Boot` from 3.2.4 to 3.2.5 ([`ff2a974f`](https://github.com/ivasibi/ascent/commit/ff2a974f))
+
 ## [0.0.5] - 2024-04-27 [UNRELEASED]
 
 ### Added
@@ -53,7 +73,8 @@
 ### Added
 
 - [ :rocket: ] Add `Authentication` logic ([`47365e93`](https://github.com/ivasibi/ascent/commit/47365e93))
-- [ :rocket: ] Add `Dev` and `Prod` profiles ([`67f6b601`](https://github.com/ivasibi/ascent/commit/67f6b601))
+- [ :rocket: ] Add `USER` and `ADMIN` roles
+- [ :rocket: ] Add `dev` and `prod` profiles ([`67f6b601`](https://github.com/ivasibi/ascent/commit/67f6b601))
 - [ :package: ] Add `HTMX` 1.9.8
 - [ :package: ] Add `Font Awesome` 6.4.2
 - [ :package: ] Add `Bootstrap` 5.3.2
@@ -62,7 +83,7 @@
 
 ### Changed
 
-- [ :rocket: ] Set `Redis` as `Session Store` ([`3b31a591`](https://github.com/ivasibi/ascent/commit/3b31a591)) 
+- [ :rocket: ] Set `Redis` as `Session Store` ([`3b31a591`](https://github.com/ivasibi/ascent/commit/3b31a591))
 
 ## [0.0.1] - 2023-10-22 [UNRELEASED]
 
