@@ -34,6 +34,12 @@
             </properties>
         </profile>
         <profile>
+            <id>stg</id>
+            <properties>
+                <spring.profiles.active>stg</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
             <id>prod</id>
             <properties>
                 <spring.profiles.active>prod</spring.profiles.active>
