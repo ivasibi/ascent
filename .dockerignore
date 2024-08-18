@@ -1,0 +1,12 @@
+.idea/
+configs/
+docs/
+src/main/resources/application-dev.yml
+src/test/
+target/
+volumes/
+
+.editorconfig
+.gitignore
+CHANGELOG.md
+compose-dev.yml

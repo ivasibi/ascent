@@ -1,0 +1,46 @@
+name: ascent-prod
+services:
+
+  ascent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ascent-prod:0.0.6
+    pull_policy: build
+    container_name: ascent-prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AE_MYSQL_USER: ${AE_MYSQL_USER:-ascent-prod}
+      AE_MYSQL_PASSWORD: ${AE_MYSQL_PASSWORD:-ascent-prod}
+      AE_MYSQL_DATABASE: ${AE_MYSQL_DATABASE:-ascent-prod}
+      AE_REDIS_PASSWORD: ${AE_REDIS_PASSWORD:-ascent-prod}
+    ports:
+      - "${AE_ASCENT_HOST_PORT:-8083}:8080"
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    image: mysql:8
+    container_name: mysql-prod
+    restart: always
+    environment:
+      MYSQL_USER: ${AE_MYSQL_USER:-ascent-prod}
+      MYSQL_PASSWORD: ${AE_MYSQL_PASSWORD:-ascent-prod}
+      MYSQL_DATABASE: ${AE_MYSQL_DATABASE:-ascent-prod}
+      MYSQL_ROOT_PASSWORD: ${AE_MYSQL_ROOT_PASSWORD:-ascent-prod}
+    ports:
+      - "${AE_MYSQL_HOST_PORT:-3308}:3306"
+    volumes:
+      - ./volumes/ascent-prod/mysql-prod:/var/lib/mysql
+
+  redis:
+    image: redis:7.2.3
+    container_name: redis-prod
+    restart: always
+    command: redis-server --requirepass ${AE_REDIS_PASSWORD:-ascent-prod}
+    ports:
+      - "${AE_REDIS_HOST_PORT:-6381}:6379"
+    volumes:
+      - ./volumes/ascent-prod/redis-prod:/data
