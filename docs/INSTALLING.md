@@ -48,8 +48,8 @@ echo nul > stg.env
 |     [ :deciduous_tree: ] `AE_MYSQL_USER`      | [ :whale2: ] `MySQL`  |     MySQL User      | [ :heavy_check_mark: ] |   `ascent-stg`   |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_MYSQL_PASSWORD`    | [ :whale2: ] `MySQL`  |   MySQL Password    | [ :heavy_check_mark: ] |   `ascent-stg`   |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_MYSQL_DATABASE`    | [ :whale2: ] `MySQL`  |   MySQL Database    | [ :heavy_check_mark: ] |   `ascent-stg`   |   [ :heavy_check_mark: ]   |
-| [ :deciduous_tree: ] `AE_MYSQL_ROOT_PASSWORD` |  [ :whale: ] `MySQL`  | MySQL Root Password | [ :heavy_check_mark: ] |   `ascent-stg`   |          [ :x: ]           |
-|   [ :deciduous_tree: ] `AE_MYSQL_HOST_PORT`   |  [ :whale: ] `MySQL`  |   MySQL Host Port   | [ :heavy_check_mark: ] |      `3307`      |          [ :x: ]           |
+| [ :deciduous_tree: ] `AE_MYSQL_ROOT_PASSWORD` | [ :whale2: ] `MySQL`  | MySQL Root Password | [ :heavy_check_mark: ] |   `ascent-stg`   |          [ :x: ]           |
+|   [ :deciduous_tree: ] `AE_MYSQL_HOST_PORT`   | [ :whale2: ] `MySQL`  |   MySQL Host Port   | [ :heavy_check_mark: ] |      `3307`      |          [ :x: ]           |
 |   [ :deciduous_tree: ] `AE_REDIS_PASSWORD`    | [ :whale2: ] `Redis`  |   Redis Password    | [ :heavy_check_mark: ] |   `ascent-stg`   |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_REDIS_HOST_PORT`   | [ :whale2: ] `Redis`  |   Redis Host Port   | [ :heavy_check_mark: ] |      `6380`      |          [ :x: ]           |
 
@@ -100,8 +100,8 @@ echo nul > prod.env
 |     [ :deciduous_tree: ] `AE_MYSQL_USER`      | [ :whale2: ] `MySQL`  |     MySQL User      | [ :heavy_check_mark: ] | `ascent-prod` |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_MYSQL_PASSWORD`    | [ :whale2: ] `MySQL`  |   MySQL Password    | [ :heavy_check_mark: ] | `ascent-prod` |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_MYSQL_DATABASE`    | [ :whale2: ] `MySQL`  |   MySQL Database    | [ :heavy_check_mark: ] | `ascent-prod` |   [ :heavy_check_mark: ]   |
-| [ :deciduous_tree: ] `AE_MYSQL_ROOT_PASSWORD` |  [ :whale: ] `MySQL`  | MySQL Root Password | [ :heavy_check_mark: ] | `ascent-prod` |          [ :x: ]           |
-|   [ :deciduous_tree: ] `AE_MYSQL_HOST_PORT`   |  [ :whale: ] `MySQL`  |   MySQL Host Port   | [ :heavy_check_mark: ] |    `3308`     |          [ :x: ]           |
+| [ :deciduous_tree: ] `AE_MYSQL_ROOT_PASSWORD` | [ :whale2: ] `MySQL`  | MySQL Root Password | [ :heavy_check_mark: ] | `ascent-prod` |          [ :x: ]           |
+|   [ :deciduous_tree: ] `AE_MYSQL_HOST_PORT`   | [ :whale2: ] `MySQL`  |   MySQL Host Port   | [ :heavy_check_mark: ] |    `3308`     |          [ :x: ]           |
 |   [ :deciduous_tree: ] `AE_REDIS_PASSWORD`    | [ :whale2: ] `Redis`  |   Redis Password    | [ :heavy_check_mark: ] | `ascent-prod` |   [ :heavy_check_mark: ]   |
 |   [ :deciduous_tree: ] `AE_REDIS_HOST_PORT`   | [ :whale2: ] `Redis`  |   Redis Host Port   | [ :heavy_check_mark: ] |    `6381`     |          [ :x: ]           |
 
