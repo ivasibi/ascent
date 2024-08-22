@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.0.7] - 2024-08-22 [UNRELEASED]
+
+### Added
+
+- [ :book: ] Add `INSTALLING` documentation
+- [ :whale2: ] Add `compose-prod.yml` for production
+- [ :whale2: ] Add `compose-stg.yml` for staging
+- [ :gear: ] Add `.dockerignore` file
+- [ :whale2: ] Add `Dockerfile` for building
+- [ :package: ] Add `Maven Build Plugin` 3.3.2 (Spring Boot)
+- [ :rocket: ] Add `stg` profile ([`ed81ba30`](https://github.com/ivasibi/ascent/commit/ed81ba30))
+
+### Changed
+
+- [ :package: ] Bump `Testcontainers` from 1.19.7 to 1.20.1 ([`ccb761aa`](https://github.com/ivasibi/ascent/commit/ccb761aa))
+- [ :package: ] Bump `Spring Boot` from 3.2.5 to 3.3.2 ([`604735b6`](https://github.com/ivasibi/ascent/commit/604735b6))
+
 ## [0.0.6] - 2024-08-04 [UNRELEASED]
 
 ### Added
@@ -15,7 +32,7 @@
 
 ### Changed
 
-- [ :rocket: ] Set `Session Timeout` based on role
+- [ :rocket: ] Set `Session Timeout` as `Role Based`
 - [ :package: ] Bump `HTMX` from 1.9.11 to 1.9.12 ([`41176fa5`](https://github.com/ivasibi/ascent/commit/41176fa5))
 - [ :package: ] Bump `Font Awesome` from 6.5.1 to 6.5.2 ([`ad04a42c`](https://github.com/ivasibi/ascent/commit/ad04a42c))
 - [ :package: ] Bump `Spring Boot` from 3.2.4 to 3.2.5 ([`ff2a974f`](https://github.com/ivasibi/ascent/commit/ff2a974f))
