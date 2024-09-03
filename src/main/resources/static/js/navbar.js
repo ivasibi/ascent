@@ -1,4 +1,4 @@
-htmx.on("htmx:load", () => {
+htmx.onLoad(() => {
     if(document.getElementById("login_modal")) {
         document.getElementById("login_modal").addEventListener("shown.bs.modal", () => {
             document.getElementById("login_form")[0].focus();

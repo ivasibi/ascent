@@ -20,8 +20,7 @@
                     </div>
 
                     <div hx-ext="json-enc, response-targets">
-                        <form id="register_form" hx-post="/register" hx-swap="innerHTML"
-                              hx-target="#register_response" hx-target-error="#register_error">
+                        <form id="register_form" hx-post="/register" hx-swap="innerHTML" hx-target="#register_response" hx-target-error="#register_error" hx-on--after-request="registerAfterRequest()">
 
                             <div class="modal-body bg-dark text-light">
                                 <label for="register_username" class="form-label ms-1">

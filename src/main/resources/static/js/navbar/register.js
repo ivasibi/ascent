@@ -1,5 +1,5 @@
-htmx.on("htmx:afterRequest", () => {
-    if(event.detail.target.id.includes("register") && event.detail.xhr.status === 201) {
+function registerAfterRequest() {
+    if(event.detail.xhr.status === 201) {
         document.getElementById("register_error").innerHTML = "";
         setTimeout(() => {
             bootstrap.Modal.getInstance(document.getElementById("register_modal")).hide();
@@ -7,4 +7,4 @@ htmx.on("htmx:afterRequest", () => {
             document.getElementById("register_response").innerHTML = "";
         }, 1000);
     }
-});
+}

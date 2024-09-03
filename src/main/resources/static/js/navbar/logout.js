@@ -1,5 +1,5 @@
-htmx.on("htmx:afterRequest", () => {
-    if(event.detail.target.id.includes("logout") && event.detail.xhr.status === 200) {
+function logoutAfterRequest() {
+    if(event.detail.xhr.status === 200) {
         document.getElementById("logout_error").innerHTML = "";
         setTimeout(() => {
             bootstrap.Modal.getInstance(document.getElementById("logout_modal")).hide();
@@ -10,4 +10,4 @@ htmx.on("htmx:afterRequest", () => {
             });
         }, 1000);
     }
-});
+}

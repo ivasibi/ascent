@@ -20,8 +20,7 @@
                     </div>
 
                     <div hx-ext="response-targets">
-                        <form id="logout_form" hx-get="/logout" hx-swap="innerHTML"
-                              hx-target="#logout_response" hx-target-error="#logout_error">
+                        <form id="logout_form" hx-get="/logout" hx-swap="innerHTML" hx-target="#logout_response" hx-target-error="#logout_error" hx-on--after-request="logoutAfterRequest()">
 
                             <div class="modal-body bg-dark text-light">
                                 Are you sure you want to logout?

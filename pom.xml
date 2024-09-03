@@ -167,7 +167,21 @@
         <dependency>
             <groupId>org.webjars.npm</groupId>
             <artifactId>htmx.org</artifactId>
-            <version>1.9.12</version>
+            <version>2.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.webjars.npm/htmx-ext-json-enc -->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>htmx-ext-json-enc</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.webjars.npm/htmx-ext-response-targets -->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>htmx-ext-response-targets</artifactId>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
 

@@ -20,8 +20,7 @@
                     </div>
 
                     <div hx-ext="json-enc, response-targets">
-                        <form id="login_form" hx-post="/login" hx-swap="innerHTML"
-                              hx-target="#login_response" hx-target-error="#login_error">
+                        <form id="login_form" hx-post="/login" hx-swap="innerHTML" hx-target="#login_response" hx-target-error="#login_error" hx-on--after-request="loginAfterRequest()">
 
                             <div class="modal-body bg-dark text-light">
                                 <label for="login_email" class="form-label ms-1">
