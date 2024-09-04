@@ -31,9 +31,9 @@ public abstract class ContainerEnvironment {
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
 
-    private final static String redisImage = "redis:7.2.3";
+    private final static String redisImage = "redis:7.4.0";
 
-    public final static String redisPassword = "test";
+    public final static String redisPassword = "ascent-test";
 
     public static GenericContainer<?> redisContainer = new GenericContainer<>(redisImage)
         .withExposedPorts(6379)
