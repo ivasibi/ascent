@@ -27,7 +27,7 @@ public abstract class ContainerEnvironment {
 
     public final static String cacheTTL = "3600000";
 
-    private final static String mySQLImage = "mysql:8";
+    private final static String mySQLImage = "mysql:8.4.2";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
 
