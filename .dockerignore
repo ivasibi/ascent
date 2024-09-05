@@ -2,6 +2,7 @@
 .idea/
 configs/
 docs/
+logs/
 src/main/resources/application-dev.yml
 src/test/
 target/
