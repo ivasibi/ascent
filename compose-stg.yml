@@ -17,6 +17,8 @@ services:
       AE_REDIS_PASSWORD: ${AE_REDIS_PASSWORD:-ascent-stg}
     ports:
       - "${AE_ASCENT_HOST_PORT:-8082}:8080"
+    volumes:
+      - ./volumes/ascent-stg/ascent-stg/logs:/ascent/logs
     depends_on:
       - mysql
       - redis

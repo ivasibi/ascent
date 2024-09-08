@@ -28,13 +28,17 @@ public abstract class ContainerEnvironment {
 
     public final static String cacheTTL = "3600000";
 
+    public final static String loggingFilePath = "./logs";
+
+    public final static String loggingFileName = "ascent-dev.log";
+
     private final static String mySQLImage = "mysql:8.4.2";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
 
     private final static String redisImage = "redis:7.4.0";
 
-    public final static String redisPassword = "ascent-test";
+    public final static String redisPassword = "ascent-dev";
 
     public static GenericContainer<?> redisContainer = new GenericContainer<>(redisImage)
         .withExposedPorts(6379)
@@ -51,6 +55,7 @@ public abstract class ContainerEnvironment {
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
+        dynamicPropertyRegistry.add("logging.logback.rollingpolicy.file-name-pattern", () -> "${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.zip");
         dynamicPropertyRegistry.add("spring.profiles.default", () -> "dev");
         dynamicPropertyRegistry.add("spring.profiles.active", () -> "dev");
         dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
@@ -61,11 +66,16 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("spring.cache.redis.key-prefix", () -> cacheKeyPrefix);
         dynamicPropertyRegistry.add("spring.cache.redis.time-to-live", () -> cacheTTL);
 
+        dynamicPropertyRegistry.add("logging.level.root", () -> "debug");
+        dynamicPropertyRegistry.add("logging.file.name", () -> loggingFilePath + "/" + loggingFileName);
+        dynamicPropertyRegistry.add("logging.logback.rollingpolicy.max-file-size", () -> "5MB");
+        dynamicPropertyRegistry.add("logging.logback.rollingpolicy.max-history", () -> "7");
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
         dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
         dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
         dynamicPropertyRegistry.add("spring.data.redis.host", () -> redisContainer.getHost());
         dynamicPropertyRegistry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
         dynamicPropertyRegistry.add("spring.data.redis.password", () -> redisPassword);
+        dynamicPropertyRegistry.add("spring.jpa.show-sql", () -> "true");
     }
 }

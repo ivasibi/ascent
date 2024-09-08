@@ -4,6 +4,10 @@ server:
     session:
       cookie:
         name: AC-SESSION
+logging:
+  logback:
+    rollingpolicy:
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.zip
 spring:
   profiles:
     default: dev

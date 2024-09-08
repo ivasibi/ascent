@@ -188,7 +188,7 @@ public class RegisterControllerTest {
 
     @Test
     @ExtendWith(OutputCaptureExtension.class)
-    public void callWithRuntimeExceptionThrownLogsError(CapturedOutput capturedOutput) throws Exception {
+    public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();

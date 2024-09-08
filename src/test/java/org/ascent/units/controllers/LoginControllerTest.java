@@ -189,7 +189,7 @@ public class LoginControllerTest {
 
     @Test
     @ExtendWith(OutputCaptureExtension.class)
-    public void callWithRuntimeExceptionThrownLogsError(CapturedOutput capturedOutput) throws Exception {
+    public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
         LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();

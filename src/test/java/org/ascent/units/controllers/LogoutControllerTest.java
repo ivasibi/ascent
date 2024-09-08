@@ -90,7 +90,7 @@ public class LogoutControllerTest {
 
     @Test
     @ExtendWith(OutputCaptureExtension.class)
-    public void callWithRuntimeExceptionThrownLogsError(CapturedOutput capturedOutput) throws Exception {
+    public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
         doThrow(new RuntimeException("RuntimeException")).when(mockLogoutManager).logout(any(HttpServletRequest.class));
 
         mockMvc.perform(
