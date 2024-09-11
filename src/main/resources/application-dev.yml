@@ -1,12 +1,13 @@
 logging:
   level:
-    root: debug
+    org.ascent: debug
   file:
     name: ./logs/ascent-dev.log
   logback:
     rollingpolicy:
       max-file-size: 5MB
       max-history: 7
+      file-name-pattern: ./logs/ascent-dev.%d{yyyy-MM-dd}.%i.log.zip
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/ascent-dev

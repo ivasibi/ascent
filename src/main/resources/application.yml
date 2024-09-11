@@ -5,9 +5,8 @@ server:
       cookie:
         name: AC-SESSION
 logging:
-  logback:
-    rollingpolicy:
-      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.zip
+  level:
+    root: info
 spring:
   profiles:
     default: dev

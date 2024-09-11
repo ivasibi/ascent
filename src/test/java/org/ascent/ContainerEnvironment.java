@@ -30,7 +30,9 @@ public abstract class ContainerEnvironment {
 
     public final static String loggingFilePath = "./logs";
 
-    public final static String loggingFileName = "ascent-dev.log";
+    public final static String loggingFileName = "ascent-dev";
+
+    public final static String loggingFileExtension = ".log";
 
     private final static String mySQLImage = "mysql:8.4.2";
 
@@ -55,7 +57,7 @@ public abstract class ContainerEnvironment {
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
-        dynamicPropertyRegistry.add("logging.logback.rollingpolicy.file-name-pattern", () -> "${LOG_FILE}.%d{yyyy-MM-dd}.%i.log.zip");
+        dynamicPropertyRegistry.add("logging.level.root", () -> "info");
         dynamicPropertyRegistry.add("spring.profiles.default", () -> "dev");
         dynamicPropertyRegistry.add("spring.profiles.active", () -> "dev");
         dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
@@ -66,10 +68,11 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("spring.cache.redis.key-prefix", () -> cacheKeyPrefix);
         dynamicPropertyRegistry.add("spring.cache.redis.time-to-live", () -> cacheTTL);
 
-        dynamicPropertyRegistry.add("logging.level.root", () -> "debug");
-        dynamicPropertyRegistry.add("logging.file.name", () -> loggingFilePath + "/" + loggingFileName);
+        dynamicPropertyRegistry.add("logging.level.org.ascent", () -> "debug");
+        dynamicPropertyRegistry.add("logging.file.name", () -> loggingFilePath + "/" + loggingFileName + loggingFileExtension);
         dynamicPropertyRegistry.add("logging.logback.rollingpolicy.max-file-size", () -> "5MB");
         dynamicPropertyRegistry.add("logging.logback.rollingpolicy.max-history", () -> "7");
+        dynamicPropertyRegistry.add("logging.logback.rollingpolicy.file-name-pattern", () -> loggingFilePath + "/" + loggingFileName + ".%d{yyyy-MM-dd}.%i" + loggingFileExtension + ".zip");
         dynamicPropertyRegistry.add("spring.datasource.url", () -> mySQLContainer.getJdbcUrl());
         dynamicPropertyRegistry.add("spring.datasource.username", () -> mySQLContainer.getUsername());
         dynamicPropertyRegistry.add("spring.datasource.password", () -> mySQLContainer.getPassword());
