@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ascent-stg:0.0.7
+    image: ascent-stg:0.0.8
     pull_policy: build
     container_name: ascent-stg
     restart: unless-stopped

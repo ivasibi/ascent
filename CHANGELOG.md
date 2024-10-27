@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.8] - 2024-10-27 [UNRELEASED]
+
+### Added
+
+- [ :test_tube: ] Add `Logging` tests
+- [ :rocket: ] Add `Logging` filter
+- [ :rocket: ] Add `Logging` to `File (Rolling)`
+
+### Changed
+
+- [ :whale2: ] Bump `Redis` from 7.2.3 to 7.4.0 ([`f435dcb7`](https://github.com/ivasibi/ascent/commit/f435dcb7))
+- [ :whale2: ] Bump `MySQL` from 8 to 8.4.2 ([`cf887f3c`](https://github.com/ivasibi/ascent/commit/cf887f3c))
+- [ :package: ] Bump `HTMX` from 1.9.12 to 2.0.0 ([`50b0f7e2`](https://github.com/ivasibi/ascent/commit/50b0f7e2))
+- [ :package: ] Bump `Spring Boot` from 3.3.2 to 3.3.3 ([`39b72d6b`](https://github.com/ivasibi/ascent/commit/39b72d6b))
+
 ## [0.0.7] - 2024-08-22 [UNRELEASED]
 
 ### Added
@@ -53,7 +68,7 @@
 
 ### Added
 
-- [ :test_tube: ] Add `Session Timeout` test ([`2d484336`](https://github.com/ivasibi/ascent/commit/2d484336))
+- [ :test_tube: ] Add `Session Timeout` tests ([`2d484336`](https://github.com/ivasibi/ascent/commit/2d484336))
 - [ :test_tube: ] Add `Server Protocol` and `Server IP` parameters ([`91f0ad4f`](https://github.com/ivasibi/ascent/commit/91f0ad4f))
 
 ### Changed
@@ -92,6 +107,8 @@
 - [ :rocket: ] Add `Authentication` logic ([`47365e93`](https://github.com/ivasibi/ascent/commit/47365e93))
 - [ :rocket: ] Add `USER` and `ADMIN` roles
 - [ :rocket: ] Add `dev` and `prod` profiles ([`67f6b601`](https://github.com/ivasibi/ascent/commit/67f6b601))
+- [ :whale2: ] Add `Redis` 7.2.3
+- [ :whale2: ] Add `MySQL` 8
 - [ :package: ] Add `HTMX` 1.9.8
 - [ :package: ] Add `Font Awesome` 6.4.2
 - [ :package: ] Add `Bootstrap` 5.3.2
