@@ -62,9 +62,18 @@ public class ViewControllerTest {
     }
 
     @Test
+    public void callNavbarWithoutHTMXHeaderReturnsNotFound() throws Exception {
+        mockMvc.perform(
+                get("/navbar"))
+            .andDo(print())
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void callNavbarWithPostHTTPMethodReturnsMethodNotAllowed() throws Exception {
         mockMvc.perform(
-                post("/navbar"))
+                post("/navbar")
+                    .header("HX-Request", "true"))
             .andDo(print())
             .andExpect(status().isMethodNotAllowed());
     }
@@ -72,7 +81,8 @@ public class ViewControllerTest {
     @Test
     public void callNavbarReturnsOkAndNavbar() throws Exception {
         mockMvc.perform(
-                get("/navbar"))
+                get("/navbar")
+                    .header("HX-Request", "true"))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(view().name("fragments/navbar :: navbar"));
@@ -81,7 +91,8 @@ public class ViewControllerTest {
     @Test
     public void callNavbarThenCallsViewManagerNavbarMethod() throws Exception {
         mockMvc.perform(
-                get("/navbar"))
+                get("/navbar")
+                    .header("HX-Request", "true"))
             .andDo(print());
 
         verify(mockViewManager, times(1)).navbar(any(HttpSession.class), any(ModelAndView.class));

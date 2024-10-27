@@ -143,7 +143,7 @@ public class RegisterControllerTest {
             .andDo(print())
             .andExpect(status().isConflict())
             .andExpect(view().name("responses/register_response :: username_already_in_use"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException));
+            .andExpect(result -> assertInstanceOf(UsernameAlreadyInUseException.class, result.getResolvedException()));
     }
 
     @Test
@@ -163,7 +163,7 @@ public class RegisterControllerTest {
             .andDo(print())
             .andExpect(status().isConflict())
             .andExpect(view().name("responses/register_response :: email_already_in_use"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException));
+            .andExpect(result -> assertInstanceOf(EmailAlreadyInUseException.class, result.getResolvedException()));
     }
 
     @Test
@@ -188,13 +188,87 @@ public class RegisterControllerTest {
 
     @Test
     @ExtendWith(OutputCaptureExtension.class)
+    public void callWithoutExceptionThrownLogsRequestOnConsole(CapturedOutput capturedOutput) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        mockMvc.perform(
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.RegisterController")),
+            () -> assertTrue(capturedOutput.getOut().contains("RegisterRequest(username=null, email=null)"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    public void callWithUsernameAlreadyInUseExceptionThrownLogsWarningOnConsole(CapturedOutput capturedOutput) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        doThrow(new UsernameAlreadyInUseException()).when(mockRegisterManager).register(any(RegisterRequest.class));
+
+        mockMvc.perform(
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("WARN")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.RegisterController")),
+            () -> assertTrue(capturedOutput.getOut().contains("RegisterRequest(username=null, email=null)")),
+            () -> assertTrue(capturedOutput.getOut().contains("UsernameAlreadyInUseException"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    public void callWithEmailAlreadyInUseExceptionThrownLogsWarningOnConsole(CapturedOutput capturedOutput) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        doThrow(new EmailAlreadyInUseException()).when(mockRegisterManager).register(any(RegisterRequest.class));
+
+        mockMvc.perform(
+                post("/register")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(registerRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("WARN")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.RegisterController")),
+            () -> assertTrue(capturedOutput.getOut().contains("RegisterRequest(username=null, email=null)")),
+            () -> assertTrue(capturedOutput.getOut().contains("EmailAlreadyInUseException"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
     public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
         String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
 
-        doThrow(new RuntimeException("RuntimeException")).when(mockRegisterManager).register(any(RegisterRequest.class));
+        doThrow(new RuntimeException("Message")).when(mockRegisterManager).register(any(RegisterRequest.class));
 
         mockMvc.perform(
                 post("/register")
@@ -206,7 +280,7 @@ public class RegisterControllerTest {
         assertAll(
             () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
             () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.RegisterController")),
-            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException Message"))
         );
     }
 }

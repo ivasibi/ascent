@@ -319,6 +319,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         mockMvc.perform(
                 get("/navbar")
+                    .header("HX-Request", "true")
                     .session(mockHttpSession))
             .andDo(print())
             .andExpect(status().isOk())
@@ -338,6 +339,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         mockMvc.perform(
                 get("/navbar")
+                    .header("HX-Request", "true")
                     .session(mockHttpSession))
             .andDo(print())
             .andExpect(status().isOk())
@@ -356,6 +358,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         mockMvc.perform(
                 get("/navbar")
+                    .header("HX-Request", "true")
                     .session(mockHttpSession))
             .andDo(print())
             .andExpect(status().isOk())
@@ -391,9 +394,9 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.post()
             .uri("/login")
-            .header("HX-Request", "true")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(loginRequestJson)
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
             .exchange();
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
@@ -404,7 +407,8 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         responseSpec = serverTestClient.get()
             .uri("/navbar")
-            .cookie(sessionCookieName, sessionCookie)
+                .header("HX-Request", "true")
+                .cookie(sessionCookieName, sessionCookie)
             .exchange();
 
         HttpStatusCode responseStatusCode = responseSpec.returnResult(String.class).getStatus();
@@ -432,6 +436,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         WebTestClient.ResponseSpec responseSpec = serverTestClient.get()
             .uri("/navbar")
+                .header("HX-Request", "true")
                 .cookie(sessionCookieName, "session")
             .exchange();
 

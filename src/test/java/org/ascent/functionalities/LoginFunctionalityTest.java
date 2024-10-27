@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -26,6 +28,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -34,6 +39,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 public class LoginFunctionalityTest extends ContainerEnvironment {
+
+    private final static Logger logger = LoggerFactory.getLogger(LoginFunctionalityTest.class.getName());
 
     private WebTestClient serverTestClient;
 
@@ -73,6 +80,13 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
         redisTemplate.afterPropertiesSet();
 
         lettuceConnectionFactory.start();
+
+        File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+        try {
+            Files.writeString(loggingFile.toPath(), "");
+        } catch (IOException e) {
+            logger.error("{} {}", "IOException", e.getMessage());
+        }
     }
 
     @AfterEach
@@ -128,6 +142,8 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
 
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
+        File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+
         assertAll(
             () -> assertTrue(userRepository.existsByUsername(username)),
             () -> assertTrue(userRepository.existsByEmail(email)),
@@ -165,6 +181,29 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                     () -> assertEquals(Role.USER, cacheUser.getRole()),
                     () -> assertNotNull(cacheUser.getCreatedOn()),
                     () -> assertNull(cacheUser.getLastLogin())
+                );
+            },
+            () -> assertTrue(loggingFile.exists()),
+            () -> {
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/register")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.RegisterController")),
+                    () -> {
+                        StringBuilder registerRequestString = new StringBuilder();
+                        registerRequestString.append("RegisterRequest(username=");
+                        registerRequestString.append(username);
+                        registerRequestString.append(", email=");
+                        registerRequestString.append(email);
+                        registerRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(registerRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("201"))
                 );
             }
         );
@@ -204,7 +243,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                         Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                         assertNotNull(sessionUsername);
                         assertAll(
-                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertInstanceOf(String.class, sessionUsername),
                             () -> assertEquals(sessionUsername, persistenceUser.getUsername())
                         );
                     },
@@ -212,7 +251,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                         Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
                         assertNotNull(sessionRole);
                         assertAll(
-                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertInstanceOf(Role.class, sessionRole),
                             () -> assertEquals(sessionRole, persistenceUser.getRole())
                         );
                     },
@@ -225,7 +264,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                 Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
                 assertNotNull(sessionLogged);
                 assertAll(
-                    () -> assertTrue(sessionLogged instanceof Boolean),
+                    () -> assertInstanceOf(Boolean.class, sessionLogged),
                     () -> assertTrue((boolean) sessionLogged)
                 );
             },
@@ -253,7 +292,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                         Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                         assertNotNull(sessionUsername);
                         assertAll(
-                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertInstanceOf(String.class, sessionUsername),
                             () -> assertEquals(sessionUsername, cacheUser.getUsername())
                         );
                     },
@@ -261,12 +300,33 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
                         Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
                         assertNotNull(sessionRole);
                         assertAll(
-                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertInstanceOf(Role.class, sessionRole),
                             () -> assertEquals(sessionRole, cacheUser.getRole())
                         );
                     },
                     () -> assertNotNull(cacheUser.getLastLogin()),
                     () -> assertTrue(cacheUser.getCreatedOn().isBefore(cacheUser.getLastLogin()))
+                );
+            },
+            () -> assertTrue(loggingFile.exists()),
+            () -> {
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/login")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.LoginController")),
+                    () -> {
+                        StringBuilder loginRequestString = new StringBuilder();
+                        loginRequestString.append("LoginRequest(email=");
+                        loginRequestString.append(email);
+                        loginRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(loginRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("200"))
                 );
             }
         );

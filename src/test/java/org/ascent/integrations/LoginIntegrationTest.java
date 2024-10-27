@@ -7,6 +7,7 @@ import org.ascent.entities.User;
 import org.ascent.enums.Role;
 import org.ascent.exceptions.InvalidCredentialsException;
 import org.ascent.exceptions.UserDisabledException;
+import org.ascent.filters.LoggingFilter;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.LoginRequest;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -31,6 +34,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
@@ -45,6 +51,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 public class LoginIntegrationTest extends ContainerEnvironment {
+
+    private final static Logger logger = LoggerFactory.getLogger(LoginIntegrationTest.class.getName());
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -70,7 +78,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
     @BeforeEach
     public void beforeEach() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(new LoggingFilter()).build();
 
         serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
@@ -146,6 +154,13 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         redisTemplate.afterPropertiesSet();
 
         lettuceConnectionFactory.start();
+
+        File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+        try {
+            Files.writeString(loggingFile.toPath(), "");
+        } catch (IOException e) {
+            logger.error("{} {}", "IOException", e.getMessage());
+        }
     }
 
     @AfterEach
@@ -225,7 +240,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
             .andExpect(model().size(0))
             .andExpect(view().name("responses/login_response :: invalid_credentials"))
             .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+            .andExpect(result -> assertInstanceOf(InvalidCredentialsException.class, result.getResolvedException()))
             .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
     }
 
@@ -255,7 +270,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
             .andExpect(model().size(0))
             .andExpect(view().name("responses/login_response :: user_disabled"))
             .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException))
+            .andExpect(result -> assertInstanceOf(UserDisabledException.class, result.getResolvedException()))
             .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">User disabled!</span>")));
     }
 
@@ -288,7 +303,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
             .andExpect(model().size(0))
             .andExpect(view().name("responses/login_response :: invalid_credentials"))
             .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException))
+            .andExpect(result -> assertInstanceOf(InvalidCredentialsException.class, result.getResolvedException()))
             .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Invalid credentials!</span>")));
     }
 
@@ -562,7 +577,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                         Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                         assertNotNull(sessionUsername);
                         assertAll(
-                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertInstanceOf(String.class, sessionUsername),
                             () -> assertEquals(sessionUsername, persistenceUser.getUsername())
                         );
                     },
@@ -570,7 +585,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                         Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
                         assertNotNull(sessionRole);
                         assertAll(
-                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertInstanceOf(Role.class, sessionRole),
                             () -> assertEquals(sessionRole, persistenceUser.getRole())
                         );
                     },
@@ -589,7 +604,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 Object sessionLogged = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:logged");
                 assertNotNull(sessionLogged);
                 assertAll(
-                    () -> assertTrue(sessionLogged instanceof Boolean),
+                    () -> assertInstanceOf(Boolean.class, sessionLogged),
                     () -> assertTrue((boolean) sessionLogged)
                 );
             },
@@ -602,7 +617,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                         Object sessionUsername = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:username");
                         assertNotNull(sessionUsername);
                         assertAll(
-                            () -> assertTrue(sessionUsername instanceof String),
+                            () -> assertInstanceOf(String.class, sessionUsername),
                             () -> assertEquals(sessionUsername, cacheUser.getUsername())
                         );
                     },
@@ -610,7 +625,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                         Object sessionRole = redisTemplate.opsForHash().get(sessionKey, "sessionAttr:role");
                         assertNotNull(sessionRole);
                         assertAll(
-                            () -> assertTrue(sessionRole instanceof Role),
+                            () -> assertInstanceOf(Role.class, sessionRole),
                             () -> assertEquals(sessionRole, cacheUser.getRole())
                         );
                     },
@@ -962,6 +977,216 @@ public class LoginIntegrationTest extends ContainerEnvironment {
                 assertAll(
                     () -> assertTrue(sessionKeyTTL.intValue() >= (Integer) sessionMaxInactiveInterval - 10),
                     () -> assertTrue(sessionKeyTTL.intValue() <= (Integer) sessionMaxInactiveInterval)
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithExistingUserLogsRequestOnFile() {
+        return Stream.of(
+            arguments("username@email.com", "password"),
+            arguments("username2@email.com", "password2"),
+            arguments("username3@email.com", "password3"),
+            arguments("username4@email.com", "password4")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingUserLogsRequestOnFile(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        serverTestClient.post()
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/login")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.LoginController")),
+                    () -> {
+                        StringBuilder loginRequestString = new StringBuilder();
+                        loginRequestString.append("LoginRequest(email=");
+                        loginRequestString.append(email);
+                        loginRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(loginRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("200"))
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithNonExistingUserLogsWarningOnFile() {
+        return Stream.of(
+            arguments("username6@email.com", "password6"),
+            arguments("username7@email.com", "password7"),
+            arguments("username8@email.com", "password8")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonExistingUserLogsWarningOnFile(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        serverTestClient.post()
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/login")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("WARN")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.LoginController")),
+                    () -> {
+                        StringBuilder loginRequestString = new StringBuilder();
+                        loginRequestString.append("LoginRequest(email=");
+                        loginRequestString.append(email);
+                        loginRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(loginRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("InvalidCredentialsException")),
+                    () -> assertTrue(loggingFileContent.contains("401"))
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithDisabledUserLogsWarningOnFile() {
+        return Stream.of(
+            arguments("username5@email.com", "password5")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithDisabledUserLogsWarningOnFile(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        serverTestClient.post()
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/login")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("WARN")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.LoginController")),
+                    () -> {
+                        StringBuilder loginRequestString = new StringBuilder();
+                        loginRequestString.append("LoginRequest(email=");
+                        loginRequestString.append(email);
+                        loginRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(loginRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("UserDisabledException")),
+                    () -> assertTrue(loggingFileContent.contains("401"))
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithNonMatchingPasswordLogsWarningOnFile() {
+        return Stream.of(
+            arguments("username@email.com", "password2"),
+            arguments("username2@email.com", "password3"),
+            arguments("username3@email.com", "password4"),
+            arguments("username4@email.com", "password5")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonMatchingPasswordLogsWarningOnFile(String email, String password) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail(email);
+        loginRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        serverTestClient.post()
+            .uri("/login")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(loginRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/login")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("WARN")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.LoginController")),
+                    () -> {
+                        StringBuilder loginRequestString = new StringBuilder();
+                        loginRequestString.append("LoginRequest(email=");
+                        loginRequestString.append(email);
+                        loginRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(loginRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("InvalidCredentialsException")),
+                    () -> assertTrue(loggingFileContent.contains("401"))
                 );
             }
         );

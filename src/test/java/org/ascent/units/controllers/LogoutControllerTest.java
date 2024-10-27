@@ -91,7 +91,7 @@ public class LogoutControllerTest {
     @Test
     @ExtendWith(OutputCaptureExtension.class)
     public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
-        doThrow(new RuntimeException("RuntimeException")).when(mockLogoutManager).logout(any(HttpServletRequest.class));
+        doThrow(new RuntimeException("Message")).when(mockLogoutManager).logout(any(HttpServletRequest.class));
 
         mockMvc.perform(
                 get("/logout")
@@ -101,7 +101,7 @@ public class LogoutControllerTest {
         assertAll(
             () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
             () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LogoutController")),
-            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException Message"))
         );
     }
 }

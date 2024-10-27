@@ -3,19 +3,19 @@ package org.ascent.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.ascent.managers.LogoutManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.logging.Logger;
-
 @Controller
 @RequiredArgsConstructor
 public class LogoutController {
 
-    private final static Logger logger = Logger.getLogger(LogoutController.class.getName());
+    private final static Logger logger = LoggerFactory.getLogger(LogoutController.class.getName());
 
     private final LogoutManager logoutManager;
 
@@ -29,7 +29,7 @@ public class LogoutController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     private String handleException(Exception e) {
-        logger.severe(e.getMessage());
+        logger.error("{} {}", e.getClass().getSimpleName(), e.getMessage());
         return "responses/logout_response :: error";
     }
 }

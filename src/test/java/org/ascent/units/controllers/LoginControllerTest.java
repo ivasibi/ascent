@@ -144,7 +144,7 @@ public class LoginControllerTest {
             .andDo(print())
             .andExpect(status().isUnauthorized())
             .andExpect(view().name("responses/login_response :: invalid_credentials"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof InvalidCredentialsException));
+            .andExpect(result -> assertInstanceOf(InvalidCredentialsException.class, result.getResolvedException()));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class LoginControllerTest {
             .andDo(print())
             .andExpect(status().isUnauthorized())
             .andExpect(view().name("responses/login_response :: user_disabled"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserDisabledException));
+            .andExpect(result -> assertInstanceOf(UserDisabledException.class, result.getResolvedException()));
     }
 
     @Test
@@ -189,13 +189,87 @@ public class LoginControllerTest {
 
     @Test
     @ExtendWith(OutputCaptureExtension.class)
+    public void callWithoutExceptionThrownLogsRequestOnConsole(CapturedOutput capturedOutput) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        mockMvc.perform(
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
+            () -> assertTrue(capturedOutput.getOut().contains("LoginRequest(email=null)"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    public void callWithInvalidCredentialsExceptionThrownLogsWarningOnConsole(CapturedOutput capturedOutput) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        doThrow(new InvalidCredentialsException()).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
+
+        mockMvc.perform(
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("WARN")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
+            () -> assertTrue(capturedOutput.getOut().contains("LoginRequest(email=null)")),
+            () -> assertTrue(capturedOutput.getOut().contains("InvalidCredentialsException"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    public void callWithUserDisabledExceptionThrownLogsWarningOnConsole(CapturedOutput capturedOutput) throws Exception {
+        LoginRequest loginRequest = new LoginRequest();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
+
+        doThrow(new UserDisabledException()).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
+
+        mockMvc.perform(
+                post("/login")
+                    .header("HX-Request", "true")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(loginRequestJson))
+            .andDo(print());
+
+        assertAll(
+            () -> assertTrue(capturedOutput.getOut().contains("DEBUG")),
+            () -> assertTrue(capturedOutput.getOut().contains("WARN")),
+            () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
+            () -> assertTrue(capturedOutput.getOut().contains("LoginRequest(email=null)")),
+            () -> assertTrue(capturedOutput.getOut().contains("UserDisabledException"))
+        );
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
     public void callWithRuntimeExceptionThrownLogsErrorOnConsole(CapturedOutput capturedOutput) throws Exception {
         LoginRequest loginRequest = new LoginRequest();
 
         ObjectMapper objectMapper = new ObjectMapper();
         String loginRequestJson = objectMapper.writeValueAsString(loginRequest);
 
-        doThrow(new RuntimeException("RuntimeException")).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
+        doThrow(new RuntimeException("Message")).when(mockLoginManager).login(any(HttpServletRequest.class), any(LoginRequest.class));
 
         mockMvc.perform(
                 post("/login")
@@ -207,7 +281,7 @@ public class LoginControllerTest {
         assertAll(
             () -> assertTrue(capturedOutput.getOut().contains("ERROR")),
             () -> assertTrue(capturedOutput.getOut().contains("ascent.controllers.LoginController")),
-            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException"))
+            () -> assertTrue(capturedOutput.getOut().contains("RuntimeException Message"))
         );
     }
 }

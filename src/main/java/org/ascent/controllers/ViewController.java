@@ -24,7 +24,7 @@ public class ViewController {
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/navbar")
+    @GetMapping(value = "/navbar", headers = "HX-Request")
     public ModelAndView navbar(HttpSession httpSession) {
         ModelAndView modelAndView = new ModelAndView("fragments/navbar :: navbar");
         viewManager.navbar(httpSession, modelAndView);

@@ -18,5 +18,3 @@ spring:
       host: localhost
       port: 6379
       password: ascent-dev
-  jpa:
-    show-sql: true

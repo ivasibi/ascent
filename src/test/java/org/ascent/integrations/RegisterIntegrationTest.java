@@ -7,6 +7,7 @@ import org.ascent.entities.User;
 import org.ascent.enums.Role;
 import org.ascent.exceptions.EmailAlreadyInUseException;
 import org.ascent.exceptions.UsernameAlreadyInUseException;
+import org.ascent.filters.LoggingFilter;
 import org.ascent.repositories.UserRepository;
 import org.ascent.requests.RegisterRequest;
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -29,6 +32,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -41,6 +47,8 @@ import static org.junit.jupiter.api.Assumptions.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 public class RegisterIntegrationTest extends ContainerEnvironment {
+
+    private final static Logger logger = LoggerFactory.getLogger(RegisterIntegrationTest.class.getName());
 
     @Autowired
     private WebApplicationContext webApplicationContext;
@@ -66,7 +74,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
 
     @BeforeEach
     public void beforeEach() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(new LoggingFilter()).build();
 
         serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
 
@@ -102,6 +110,13 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         redisTemplate.afterPropertiesSet();
 
         lettuceConnectionFactory.start();
+
+        File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+        try {
+            Files.writeString(loggingFile.toPath(), "");
+        } catch (IOException e) {
+            logger.error("{} {}", "IOException", e.getMessage());
+        }
     }
 
     @AfterEach
@@ -184,7 +199,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
             .andExpect(model().size(0))
             .andExpect(view().name("responses/register_response :: username_already_in_use"))
             .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof UsernameAlreadyInUseException))
+            .andExpect(result -> assertInstanceOf(UsernameAlreadyInUseException.class, result.getResolvedException()))
             .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Username is already in use!</span>")));
     }
 
@@ -218,7 +233,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
             .andExpect(model().size(0))
             .andExpect(view().name("responses/register_response :: email_already_in_use"))
             .andExpect(content().contentType("text/html;charset=UTF-8"))
-            .andExpect(result -> assertTrue(result.getResolvedException() instanceof EmailAlreadyInUseException))
+            .andExpect(result -> assertInstanceOf(EmailAlreadyInUseException.class, result.getResolvedException()))
             .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("<span class=\"ms-1\">Email is already in use!</span>")));
     }
 
@@ -526,5 +541,174 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
             .exchange();
 
         assertFalse(userRepository.existsByUsername(username));
+    }
+
+    private static Stream<Arguments> callWithNonExistingUserLogsRequestOnFile() {
+        return Stream.of(
+            arguments("username2", "username2@email.com", "password2"),
+            arguments("username3", "username3@email.com", "password3"),
+            arguments("username4", "username4@email.com", "password4"),
+            arguments("username5", "username5@email.com", "password5")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithNonExistingUserLogsRequestOnFile(String username, String email, String password) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        serverTestClient.post()
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/register")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.RegisterController")),
+                    () -> {
+                        StringBuilder registerRequestString = new StringBuilder();
+                        registerRequestString.append("RegisterRequest(username=");
+                        registerRequestString.append(username);
+                        registerRequestString.append(", email=");
+                        registerRequestString.append(email);
+                        registerRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(registerRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("201"))
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithExistingUsernameLogsWarningOnFile() {
+        return Stream.of(
+            arguments("username", "username2@email.com", "password"),
+            arguments("username", "username2@email.com", "password2"),
+            arguments("username", "username3@email.com", "password2"),
+            arguments("username", "username3@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingUsernameLogsWarningOnFile(String username, String email, String password) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        serverTestClient.post()
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/register")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("WARN")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.RegisterController")),
+                    () -> {
+                        StringBuilder registerRequestString = new StringBuilder();
+                        registerRequestString.append("RegisterRequest(username=");
+                        registerRequestString.append(username);
+                        registerRequestString.append(", email=");
+                        registerRequestString.append(email);
+                        registerRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(registerRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("UsernameAlreadyInUseException")),
+                    () -> assertTrue(loggingFileContent.contains("409"))
+                );
+            }
+        );
+    }
+
+    private static Stream<Arguments> callWithExistingEmailLogsWarningOnFile() {
+        return Stream.of(
+            arguments("username2", "username@email.com", "password"),
+            arguments("username2", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password2"),
+            arguments("username3", "username@email.com", "password3")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void callWithExistingEmailLogsWarningOnFile(String username, String email, String password) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String registerRequestJson = objectMapper.writeValueAsString(registerRequest);
+
+        serverTestClient.post()
+            .uri("/register")
+                .header("HX-Request", "true")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(registerRequestJson)
+            .exchange();
+
+        assertAll(
+            () -> {
+                File loggingFile = new File(loggingFilePath + "/" + loggingFileName + loggingFileExtension);
+                assertTrue(loggingFile.exists());
+                String loggingFileContent = new String(Files.readAllBytes(loggingFile.toPath()));
+                assertAll(
+                    () -> assertTrue(loggingFileContent.contains("INFO")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.filters.LoggingFilter")),
+                    () -> assertTrue(loggingFileContent.contains("127.0.0.1")),
+                    () -> assertTrue(loggingFileContent.contains("POST")),
+                    () -> assertTrue(loggingFileContent.contains("/register")),
+                    () -> assertTrue(loggingFileContent.contains("DEBUG")),
+                    () -> assertTrue(loggingFileContent.contains("WARN")),
+                    () -> assertTrue(loggingFileContent.contains("ascent.controllers.RegisterController")),
+                    () -> {
+                        StringBuilder registerRequestString = new StringBuilder();
+                        registerRequestString.append("RegisterRequest(username=");
+                        registerRequestString.append(username);
+                        registerRequestString.append(", email=");
+                        registerRequestString.append(email);
+                        registerRequestString.append(")");
+                        assertTrue(loggingFileContent.contains(registerRequestString));
+                    },
+                    () -> assertTrue(loggingFileContent.contains("EmailAlreadyInUseException")),
+                    () -> assertTrue(loggingFileContent.contains("409"))
+                );
+            }
+        );
     }
 }

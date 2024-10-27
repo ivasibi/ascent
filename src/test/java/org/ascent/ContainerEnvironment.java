@@ -16,7 +16,7 @@ public abstract class ContainerEnvironment {
 
     public final static String serverProtocol = "http://";
 
-    public final static String serverIP = "localhost";
+    public final static String serverIP = "127.0.0.1";
 
     public final static String serverPort = "8081";
 
@@ -58,6 +58,7 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("server.port", () -> serverPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
         dynamicPropertyRegistry.add("logging.level.root", () -> "info");
+        dynamicPropertyRegistry.add("logging.pattern.correlation", () -> "[%X{AL-CORRELATION}] ");
         dynamicPropertyRegistry.add("spring.profiles.default", () -> "dev");
         dynamicPropertyRegistry.add("spring.profiles.active", () -> "dev");
         dynamicPropertyRegistry.add("spring.jpa.open-in-view", () -> "false");
@@ -79,6 +80,5 @@ public abstract class ContainerEnvironment {
         dynamicPropertyRegistry.add("spring.data.redis.host", () -> redisContainer.getHost());
         dynamicPropertyRegistry.add("spring.data.redis.port", () -> redisContainer.getMappedPort(6379));
         dynamicPropertyRegistry.add("spring.data.redis.password", () -> redisPassword);
-        dynamicPropertyRegistry.add("spring.jpa.show-sql", () -> "true");
     }
 }

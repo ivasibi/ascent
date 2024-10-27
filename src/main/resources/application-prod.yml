@@ -18,5 +18,3 @@ spring:
       host: redis
       port: 6379
       password: ${AE_REDIS_PASSWORD}
-  jpa:
-    show-sql: false
