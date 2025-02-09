@@ -34,7 +34,7 @@ public abstract class ContainerEnvironment {
 
     public final static String loggingFileExtension = ".log";
 
-    private final static String mySQLImage = "mysql:8.4.2";
+    private final static String mySQLImage = "mysql:8.4.4";
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
 
