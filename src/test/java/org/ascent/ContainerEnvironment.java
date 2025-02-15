@@ -38,7 +38,7 @@ public abstract class ContainerEnvironment {
 
     public static MySQLContainer<?> mySQLContainer = new MySQLContainer<>(mySQLImage);
 
-    private final static String redisImage = "redis:7.4.0";
+    private final static String redisImage = "redis:7.4.2";
 
     public final static String redisPassword = "ascent-dev";
 
