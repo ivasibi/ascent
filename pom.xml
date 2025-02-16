@@ -142,11 +142,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.webjars/webjars-locator -->
+        <!-- https://mvnrepository.com/artifact/org.webjars/webjars-locator-lite -->
         <dependency>
             <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator</artifactId>
-            <version>0.52</version>
+            <artifactId>webjars-locator-lite</artifactId>
+            <version>1.0.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
