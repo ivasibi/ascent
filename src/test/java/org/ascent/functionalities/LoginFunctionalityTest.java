@@ -76,6 +76,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.afterPropertiesSet();
 
@@ -99,9 +100,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
         entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
-        if (redisKeys != null) {
-            redisTemplate.delete(redisKeys);
-        }
+        redisTemplate.delete(redisKeys);
 
         lettuceConnectionFactory.stop();
     }
@@ -226,8 +225,7 @@ public class LoginFunctionalityTest extends ContainerEnvironment {
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
-        assumeTrue(redisSessionKeys.size() == 1);
+        assertEquals(1, redisSessionKeys.size());
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 

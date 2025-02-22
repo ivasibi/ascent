@@ -78,6 +78,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.afterPropertiesSet();
 
@@ -101,9 +102,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
         entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
-        if (redisKeys != null) {
-            redisTemplate.delete(redisKeys);
-        }
+        redisTemplate.delete(redisKeys);
 
         lettuceConnectionFactory.stop();
     }
@@ -229,8 +228,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
-        assumeTrue(redisSessionKeys.size() == 1);
+        assertEquals(1, redisSessionKeys.size());
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
@@ -336,7 +334,7 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
-        assumeTrue(responseCookies.size() == 1);
+        assertEquals(1, responseCookies.size());
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
@@ -348,7 +346,6 @@ public class LogoutFunctionalityTest extends ContainerEnvironment {
 
         redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
         assertTrue(redisSessionKeys.isEmpty());
     }
 }

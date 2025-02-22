@@ -106,6 +106,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.afterPropertiesSet();
 
@@ -129,9 +130,7 @@ public class RegisterIntegrationTest extends ContainerEnvironment {
         entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
-        if (redisKeys != null) {
-            redisTemplate.delete(redisKeys);
-        }
+        redisTemplate.delete(redisKeys);
 
         lettuceConnectionFactory.stop();
     }

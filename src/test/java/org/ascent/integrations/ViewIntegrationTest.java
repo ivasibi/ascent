@@ -133,6 +133,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.afterPropertiesSet();
 
@@ -149,9 +150,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
         entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
-        if (redisKeys != null) {
-            redisTemplate.delete(redisKeys);
-        }
+        redisTemplate.delete(redisKeys);
 
         lettuceConnectionFactory.stop();
     }
@@ -249,7 +248,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
-        assumeTrue(responseCookies.size() == 1);
+        assertEquals(1, responseCookies.size());
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
@@ -401,7 +400,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
-        assumeTrue(responseCookies.size() == 1);
+        assertEquals(1, responseCookies.size());
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 

@@ -150,6 +150,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         redisTemplate.setConnectionFactory(lettuceConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.setValueSerializer(new JdkSerializationRedisSerializer());
         redisTemplate.afterPropertiesSet();
 
@@ -173,9 +174,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
         entityManager.close();
 
         Set<String> redisKeys = redisTemplate.keys("*");
-        if (redisKeys != null) {
-            redisTemplate.delete(redisKeys);
-        }
+        redisTemplate.delete(redisKeys);
 
         lettuceConnectionFactory.stop();
     }
@@ -559,15 +558,14 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
-        assumeTrue(redisSessionKeys.size() == 1);
+        assertEquals(1, redisSessionKeys.size());
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
         assertAll(
-            () -> assumeTrue(userRepository.existsByEmail(email)),
+            () -> assertTrue(userRepository.existsByEmail(email)),
             () -> assertNotNull(userRepository.findByEmail(email)),
             () -> {
                 User persistenceUser = query.getSingleResult();
@@ -680,7 +678,6 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
-        assumeTrue(redisSessionKeys != null);
         assertAll(
             () -> assertFalse(userRepository.existsByEmail(email)),
             () -> assertNull(userRepository.findByEmail(email)),
@@ -733,7 +730,6 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
-        assumeTrue(redisSessionKeys != null);
         assertAll(
             () -> assertTrue(userRepository.existsByEmail(email)),
             () -> assertNotNull(userRepository.findByEmail(email)),
@@ -805,7 +801,6 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         String cacheKey = cacheKeyPrefix + ":users:email::" + email;
 
-        assumeTrue(redisSessionKeys != null);
         assertAll(
             () -> assertTrue(userRepository.existsByEmail(email)),
             () -> assertNotNull(userRepository.findByEmail(email)),
@@ -870,8 +865,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
-        assumeTrue(redisSessionKeys.size() == 1);
+        assertEquals(1, redisSessionKeys.size());
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
@@ -926,8 +920,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         Set<String> redisSessionKeys = redisTemplate.keys(sessionNamespace + ":sessions:*");
 
-        assumeTrue(redisSessionKeys != null);
-        assumeTrue(redisSessionKeys.size() == 1);
+        assertEquals(1, redisSessionKeys.size());
 
         String sessionKey = redisSessionKeys.toArray()[0].toString();
 
@@ -961,7 +954,7 @@ public class LoginIntegrationTest extends ContainerEnvironment {
 
         MultiValueMap<String, ResponseCookie> responseCookies = responseSpec.returnResult(Void.class).getResponseCookies();
 
-        assumeTrue(responseCookies.size() == 1);
+        assertEquals(1, responseCookies.size());
 
         String sessionCookie = responseCookies.get(sessionCookieName).get(0).getValue();
 
