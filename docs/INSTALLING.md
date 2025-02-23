@@ -1,9 +1,9 @@
 # Installing
 
 Follow the instructions contained in this document to prepare a machine for the hosting of this application.
-The application can be installed in `Staging` mode, to test behaviour between component, and `Production` mode, for
+The application can be installed in `Staging` mode, to test behaviour between components, and `Production` mode, for
 actually serve the application. Finally, to observe the status of the application, it is necessary to connect to the
-various services.
+various services. This guide assumes that the hosting machine is running Linux.
 
 - [ :bookmark: ] [`Staging`](#staging)
     - [ :bookmark: ] [`Latest Release`](#latest-release)
@@ -11,18 +11,20 @@ various services.
     - [ :bookmark: ] [`Latest Release`](#latest-release-1)
 - [ :bookmark: ] [`Connections`](#connections)
 
+---
+
 ### Staging
 
 ### Latest Release
 
-Make sure to have the following tools installed on the hosting machine.
+Before installing it, make sure to have the following tools installed on the hosting machine.
 
 ### Tools
 
-|             Tool              | Version |                                 Download                                 |                     Documentation                      |
-|:-----------------------------:|:-------:|:------------------------------------------------------------------------:|:------------------------------------------------------:|
-| [ :whale2: ] `Docker Desktop` |    -    | [ :link: ] [`Download`](https://www.docker.com/products/docker-desktop/) | [ :book: ] [`Documentation`](https://docs.docker.com/) |
-|      [ :octocat: ] `Git`      |    -    |              [ :link: ] [`Download`](https://git-scm.com/)               | [ :book: ] [`Documentation`](https://git-scm.com/docs) |
+|             Tool             | Version |                             Download                             |                         Documentation                         |
+|:----------------------------:|:-------:|:----------------------------------------------------------------:|:-------------------------------------------------------------:|
+| [ :whale2: ] `Docker Engine` |    -    | [ :link: ] [`Download`](https://docs.docker.com/engine/install/) | [ :book: ] [`Documentation`](https://docs.docker.com/engine/) |
+|     [ :octocat: ] `Git`      |    -    |          [ :link: ] [`Download`](https://git-scm.com/)           |    [ :book: ] [`Documentation`](https://git-scm.com/docs)     |
 
 ### Steps
 
@@ -39,7 +41,7 @@ git clone https://github.com/ivasibi/ascent.git
 
 ```
 cd ascent
-echo nul > stg.env
+touch stg.env
 ```
 
 |                   Variable                    |        Service        |     Description     |        Optional        |     Default      | Used (Ascent Environment)  |
@@ -66,15 +68,14 @@ docker compose -f compose-stg.yml --env-file stg.env up -d
 
 ### Latest Release
 
-Make sure to have the following tools installed on the hosting machine.
+Before installing it, make sure to have the following tools installed on the hosting machine.
 
 ### Tools
 
-|             Tool              | Version |                                 Download                                 |                     Documentation                      |
-|:-----------------------------:|:-------:|:------------------------------------------------------------------------:|:------------------------------------------------------:|
-| [ :whale2: ] `Docker Desktop` |    -    | [ :link: ] [`Download`](https://www.docker.com/products/docker-desktop/) | [ :book: ] [`Documentation`](https://docs.docker.com/) |
-|      [ :octocat: ] `Git`      |    -    |              [ :link: ] [`Download`](https://git-scm.com/)               | [ :book: ] [`Documentation`](https://git-scm.com/docs) |
-
+|             Tool             | Version |                             Download                             |                         Documentation                         |
+|:----------------------------:|:-------:|:----------------------------------------------------------------:|:-------------------------------------------------------------:|
+| [ :whale2: ] `Docker Engine` |    -    | [ :link: ] [`Download`](https://docs.docker.com/engine/install/) | [ :book: ] [`Documentation`](https://docs.docker.com/engine/) |
+|     [ :octocat: ] `Git`      |    -    |          [ :link: ] [`Download`](https://git-scm.com/)           |    [ :book: ] [`Documentation`](https://git-scm.com/docs)     |
 
 ### Steps
 
@@ -91,7 +92,7 @@ git clone https://github.com/ivasibi/ascent.git
 
 ```
 cd ascent
-echo nul > prod.env
+touch prod.env
 ```
 
 |                   Variable                    |        Service        |     Description     |        Optional        |    Default    | Used (Ascent Environment)  |
@@ -135,19 +136,17 @@ leaving the hosting machine running only the application.
   relative `compose-%MODE%.yml` and `%MODE%.env` files, using the table below for reference. Then in the `Driver
   Properties` tab set the `allowPublicKeyRetrieval` property to `true`.
 
-|             Name             |          Value           |
-|:----------------------------:|:------------------------:|
-| [ :pencil2: ] `Server Host`  |       `%HOST_IP%`        |
-|     [ :pencil2: ] `Port`     |   `AE_MYSQL_HOST_PORT`   |
-|   [ :pencil2: ] `Database`   |   `AE_MYSQL_DATABASE`    |
-|   [ :pencil2: ] `Username`   |          `root`          |
-|   [ :pencil2: ] `Password`   | `AE_MYSQL_ROOT_PASSWORD` |
-
 - [ :star: ] Open a new connection, and set the fields using the connection details stored in the relative
   `compose-%MODE%.yml` and `%MODE%.env` files, using the table below for reference.
 
-|            Name             |        Value         |
-|:---------------------------:|:--------------------:|
-| [ :pencil2: ] `Server Host` |     `%HOST_IP%`      |
-|    [ :pencil2: ] `Port`     | `AE_REDIS_HOST_PORT` |
-|  [ :pencil2: ] `Password`   | `AE_REDIS_PASSWORD`  |
+|        Service         |                    Tool                    |           Field            |                      Value                      |
+|:----------------------:|:------------------------------------------:|:--------------------------:|:-----------------------------------------------:|
+| [ :whale2: ] `Ascent`  |    [ :earth_americas: ] `Brave Browser`    | [ :pencil2: ] `Ascent URL` |     `http://%HOST_IP%:AE_ASCENT_HOST_PORT`      |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Host`    |                   `%HOST_IP%`                   |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Port`    |              `AE_MYSQL_HOST_PORT`               |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Database`  |               `AE_MYSQL_DATABASE`               |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Username`  |            `AE_MYSQL_USER` or `root`            |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Password`  | `AE_MYSQL_PASSWORD` or `AE_MYSQL_ROOT_PASSWORD` |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Host`    |                   `%HOST_IP%`                   |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Port`    |              `AE_REDIS_HOST_PORT`               |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |  [ :pencil2: ] `Password`  |               `AE_REDIS_PASSWORD`               |
