@@ -8,7 +8,7 @@ machine. This guide assumes that the development machine is running Windows.
 
 |                    Tool                    |        Version         |                                    Download                                    |                                     Documentation                                      |
 |:------------------------------------------:|:----------------------:|:------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------:|
-|    [ :earth_americas: ] `Brave Browser`    |           -            |              [ :link: ] [`Download`](https://brave.com/download/)              |                                           -                                            |
+|     [ :earth_americas: ] `Web Browser`     |           -            |                                       -                                        |                                           -                                            |
 |       [ :whale2: ] `Docker Desktop`        |           -            |    [ :link: ] [`Download`](https://www.docker.com/products/docker-desktop/)    |             [ :book: ] [`Documentation`](https://docs.docker.com/desktop/)             |
 |            [ :octocat: ] `Git`             |           -            |                 [ :link: ] [`Download`](https://git-scm.com/)                  |                 [ :book: ] [`Documentation`](https://git-scm.com/docs)                 |
 |            [ :coffee: ] `Java`             | _Java Corretto 21.0.4_ |          [ :link: ] [`Download`](https://aws.amazon.com/en/corretto/)          |                                           -                                            |
@@ -75,7 +75,7 @@ Finally, for a better application development, connect to the services created a
 
 |         Service         |                    Tool                    |           Field            |          Value          |
 |:-----------------------:|:------------------------------------------:|:--------------------------:|:-----------------------:|
-| [ :computer: ] `Ascent` |    [ :earth_americas: ] `Brave Browser`    | [ :pencil2: ] `Ascent URL` | `http://localhost:8080` |
+| [ :computer: ] `Ascent` |     [ :earth_americas: ] `Web Browser`     | [ :pencil2: ] `Ascent URL` | `http://localhost:8080` |
 |  [ :whale2: ] `MySQL`   |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Host`    |       `localhost`       |
 |  [ :whale2: ] `MySQL`   |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Port`    |         `3306`          |
 |  [ :whale2: ] `MySQL`   |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Database`  |      `ascent-dev`       |

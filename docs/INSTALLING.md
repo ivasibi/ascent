@@ -124,13 +124,14 @@ leaving the hosting machine running only the application.
 
 |                    Tool                    | Version |                                    Download                                    | Documentation |
 |:------------------------------------------:|:-------:|:------------------------------------------------------------------------------:|:-------------:|
-|    [ :earth_americas: ] `Brave Browser`    |    -    |              [ :link: ] [`Download`](https://brave.com/download/)              |       -       |
+|     [ :earth_americas: ] `Web Browser`     |    -    |                                       -                                        |       -       |
 |          [ :chipmunk: ] `DBeaver`          |    -    |             [ :link: ] [`Download`](https://dbeaver.io/download/)              |       -       |
 | [ :star: ] `Another Redis Desktop Manager` |    -    | [ :link: ] [`Download`](https://github.com/qishibo/AnotherRedisDesktopManager) |       -       |
 
 ### Steps
 
-- [ :earth_americas: ] The application is reachable by navigating to `http://%HOST_IP%:AE_ASCENT_HOST_PORT`.
+- [ :earth_americas: ] The application is reachable by navigating to `http://%HOST_IP%:AE_ASCENT_HOST_PORT`,
+  `http://%HOST_NAME%:AE_ASCENT_HOST_PORT`, or to `http://%DNS_NAME%`.
 
 - [ :chipmunk: ] Create a new connection using the `MySQL` driver, and use the connection details stored in the
   relative `compose-%MODE%.yml` and `%MODE%.env` files, using the table below for reference. Then in the `Driver
@@ -139,14 +140,14 @@ leaving the hosting machine running only the application.
 - [ :star: ] Open a new connection, and set the fields using the connection details stored in the relative
   `compose-%MODE%.yml` and `%MODE%.env` files, using the table below for reference.
 
-|        Service         |                    Tool                    |           Field            |                      Value                      |
-|:----------------------:|:------------------------------------------:|:--------------------------:|:-----------------------------------------------:|
-| [ :whale2: ] `Ascent`  |    [ :earth_americas: ] `Brave Browser`    | [ :pencil2: ] `Ascent URL` |     `http://%HOST_IP%:AE_ASCENT_HOST_PORT`      |
-|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Host`    |                   `%HOST_IP%`                   |
-|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Port`    |              `AE_MYSQL_HOST_PORT`               |
-|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Database`  |               `AE_MYSQL_DATABASE`               |
-|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Username`  |            `AE_MYSQL_USER` or `root`            |
-|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Password`  | `AE_MYSQL_PASSWORD` or `AE_MYSQL_ROOT_PASSWORD` |
-|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Host`    |                   `%HOST_IP%`                   |
-|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Port`    |              `AE_REDIS_HOST_PORT`               |
-|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |  [ :pencil2: ] `Password`  |               `AE_REDIS_PASSWORD`               |
+|        Service         |                    Tool                    |           Field            |                                                   Value                                                   |
+|:----------------------:|:------------------------------------------:|:--------------------------:|:---------------------------------------------------------------------------------------------------------:|
+| [ :whale2: ] `Ascent`  |     [ :earth_americas: ] `Web Browser`     | [ :pencil2: ] `Ascent URL` | `http://%HOST_IP%:AE_ASCENT_HOST_PORT` or `http://%HOST_NAME%:AE_ASCENT_HOST_PORT` or `http://%DNS_NAME%` |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Host`    |                                       `%HOST_IP%` or `%HOST_NAME%`                                        |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |    [ :pencil2: ] `Port`    |                                           `AE_MYSQL_HOST_PORT`                                            |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Database`  |                                            `AE_MYSQL_DATABASE`                                            |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Username`  |                                         `AE_MYSQL_USER` or `root`                                         |
+|  [ :whale2: ] `MySQL`  |          [ :chipmunk: ] `DBeaver`          |  [ :pencil2: ] `Password`  |                              `AE_MYSQL_PASSWORD` or `AE_MYSQL_ROOT_PASSWORD`                              |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Host`    |                                       `%HOST_IP%` or `%HOST_NAME%`                                        |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |    [ :pencil2: ] `Port`    |                                           `AE_REDIS_HOST_PORT`                                            |
+|  [ :whale2: ] `Redis`  | [ :star: ] `Another Redis Desktop Manager` |  [ :pencil2: ] `Password`  |                                            `AE_REDIS_PASSWORD`                                            |
