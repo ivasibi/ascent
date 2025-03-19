@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="https://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<html xmlns:th="https://www.thymeleaf.org">
 
     <div th:fragment="logout">
 
@@ -14,7 +14,7 @@
                             <i class="fa-solid fa-right-from-bracket"></i>
                             <span class="ms-2">Logout</span>
                         </h4>
-                        <button type="button" class="btn btn-danger ms-auto" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-danger ms-auto" data-bs-dismiss="modal" id="logout_close">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -32,7 +32,7 @@
                             <div class="modal-footer bg-dark">
                                 <i class="fa-solid fa-circle-notch fa-spin text-light htmx-indicator ms-auto"></i>
 
-                                <button type="submit" class="btn btn-danger ms-2">
+                                <button type="submit" class="btn btn-danger ms-2" id="logout_submit">
                                     <i class="fa-solid fa-right-from-bracket"></i>
                                     <span class="ms-1">Logout</span>
                                 </button>

@@ -7,25 +7,25 @@
 
         <nav class="navbar sticky-top bg-dark">
             <div class="container-fluid">
-                <button type="button" class="btn btn-dark text-light me-auto" data-bs-toggle="offcanvas" data-bs-target="#menu_offcanvas">
+                <button type="button" class="btn btn-dark text-light me-auto" data-bs-toggle="offcanvas" data-bs-target="#menu_offcanvas" id="menu_button">
                     <i class="fa-solid fa-bars"></i>
                     <span class="ms-1 d-none d-sm-inline">Menu</span>
                 </button>
 
                 <div th:if="${logged}">
-                    <button type="button" class="btn btn-outline-danger text-light ms-auto" data-bs-toggle="modal" data-bs-target="#logout_modal">
+                    <button type="button" class="btn btn-outline-danger text-light ms-auto" data-bs-toggle="modal" data-bs-target="#logout_modal" id="logout_button">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="ms-1 d-none d-sm-inline">Logout</span>
                     </button>
                 </div>
 
                 <div th:unless="${logged}">
-                    <button type="button" class="btn btn-outline-success text-light ms-auto" data-bs-toggle="modal" data-bs-target="#login_modal">
+                    <button type="button" class="btn btn-outline-success text-light ms-auto" data-bs-toggle="modal" data-bs-target="#login_modal" id="login_button">
                         <i class="fa-solid fa-right-to-bracket"></i>
                         <span class="ms-1 d-none d-sm-inline">Login</span>
                     </button>
 
-                    <button type="button" class="btn btn-outline-primary text-light ms-2" data-bs-toggle="modal" data-bs-target="#register_modal">
+                    <button type="button" class="btn btn-outline-primary text-light ms-2" data-bs-toggle="modal" data-bs-target="#register_modal" id="register_button">
                         <i class="fa-solid fa-user"></i>
                         <span class="ms-1 d-none d-sm-inline">Register</span>
                     </button>
