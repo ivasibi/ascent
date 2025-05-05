@@ -5,6 +5,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebM
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.BrowserWebDriverContainer.VncRecordingMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.lifecycle.Startables;
@@ -14,11 +15,13 @@ import org.testcontainers.lifecycle.Startables;
 @AutoConfigureMockMvc
 public abstract class ContainerEnvironment {
 
-    public final static String serverProtocol = "http://";
+    public final String serverProtocol = "http://";
 
-    public final static String serverIP = "127.0.0.1";
+    public final String serverHostIP = "127.0.0.1";
 
-    public final static String serverPort = "8081";
+    public final String serverContainerHostName = "host.docker.internal";
+
+    public final static String serverHostPort = "8081";
 
     public final static String sessionCookieName = "AC-SESSION";
 
@@ -46,6 +49,16 @@ public abstract class ContainerEnvironment {
         .withExposedPorts(6379)
         .withCommand("redis-server --requirepass " + redisPassword);
 
+    public final VncRecordingMode vncRecordingMode = VncRecordingMode.RECORD_FAILING;
+
+    public final String recordingFilePathPrefix = "./src/test/results/e2es";
+
+    public final String chromeImage = "selenium/standalone-chrome:4.25.0";
+
+    public final String firefoxImage = "selenium/standalone-firefox:4.25.0";
+
+    public final String edgeImage = "selenium/standalone-edge:4.25.0";
+
     static {
         Startables.deepStart(
             mySQLContainer,
@@ -55,7 +68,7 @@ public abstract class ContainerEnvironment {
 
     @DynamicPropertySource
     public static void dynamicProperties(DynamicPropertyRegistry dynamicPropertyRegistry) {
-        dynamicPropertyRegistry.add("server.port", () -> serverPort);
+        dynamicPropertyRegistry.add("server.port", () -> serverHostPort);
         dynamicPropertyRegistry.add("server.servlet.session.cookie.name", () -> sessionCookieName);
         dynamicPropertyRegistry.add("logging.level.root", () -> "info");
         dynamicPropertyRegistry.add("logging.pattern.correlation", () -> "[%X{AL-CORRELATION}] ");

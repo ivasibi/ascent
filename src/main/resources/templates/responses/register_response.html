@@ -2,21 +2,21 @@
 <html xmlns:th="https://www.thymeleaf.org">
 
     <div th:fragment="success">
-        <div class="bg-success rounded text-light mt-3 p-2">
+        <div class="bg-success rounded text-light mt-3 p-2" id="register_success">
             <i class="fa-solid fa-check"></i>
             <span class="ms-1">Success!</span>
         </div>
     </div>
 
     <div th:fragment="username_already_in_use">
-        <div class="bg-danger rounded text-light mt-3 p-2">
+        <div class="bg-danger rounded text-light mt-3 p-2" id="register_username_already_in_use">
             <i class="fa-solid fa-xmark"></i>
             <span class="ms-1">Username is already in use!</span>
         </div>
     </div>
 
     <div th:fragment="email_already_in_use">
-        <div class="bg-danger rounded text-light mt-3 p-2">
+        <div class="bg-danger rounded text-light mt-3 p-2" id="register_email_already_in_use">
             <i class="fa-solid fa-xmark"></i>
             <span class="ms-1">Email is already in use!</span>
         </div>
