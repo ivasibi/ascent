@@ -73,7 +73,7 @@ public class ViewIntegrationTest extends ContainerEnvironment {
     public void beforeEach() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverIP + ":" + serverPort).build();
+        serverTestClient = WebTestClient.bindToServer().baseUrl(serverProtocol + serverHostIP + ":" + serverHostPort).build();
 
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
