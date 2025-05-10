@@ -1,12 +1,33 @@
 # Changelog
 
+## [0.0.9] - 2025-05-10 [UNRELEASED]
+
+### Added
+
+- [ :test_tube: ] Add `E2E` tests
+- [ :package: ] Add `Selenium` 4.26.0
+- [ :book: ] Add `UPDATING` documentation
+- [ :package: ] Add `Webjars Locator Lite` 1.0.1
+
+### Changed
+
+- [ :whale2: ] Bump `Redis` from 7.4.0 to 7.4.2 ([`c71ccfde`](https://github.com/ivasibi/ascent/commit/c71ccfde))
+- [ :whale2: ] Bump `MySQL` from 8.4.2 to 8.4.4 ([`4a0040d6`](https://github.com/ivasibi/ascent/commit/4a0040d6))
+- [ :package: ] Bump `Font Awesome` from 6.5.2 to 6.7.2 ([`23568761`](https://github.com/ivasibi/ascent/commit/23568761))
+- [ :package: ] Bump `Testcontainers` from 1.20.1 to 1.20.4 ([`3cc0ed21`](https://github.com/ivasibi/ascent/commit/3cc0ed21))
+- [ :package: ] Bump `Spring Boot` from 3.3.3 to 3.4.2 ([`517fb1a7`](https://github.com/ivasibi/ascent/commit/517fb1a7))
+
+### Removed
+
+- [ :package: ] Remove `Webjars Locator` 0.52
+
 ## [0.0.8] - 2024-10-27 [UNRELEASED]
 
 ### Added
 
 - [ :test_tube: ] Add `Logging` tests
 - [ :rocket: ] Add `Logging` filter
-- [ :rocket: ] Add `Logging` to `File (Rolling)`
+- [ :rocket: ] Add `Logging` to `Rolling File`
 
 ### Changed
 

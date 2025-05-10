@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ascent-prod:0.0.8
+    image: ascent-prod:0.0.9
     pull_policy: build
     container_name: ascent-prod
     restart: always
