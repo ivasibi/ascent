@@ -53,11 +53,11 @@ public abstract class ContainerEnvironment {
 
     public final String recordingFilePathPrefix = "./src/test/results/e2es";
 
-    public final String chromeImage = "selenium/standalone-chrome:4.25.0";
+    public final String chromeImage = "selenium/standalone-chrome:4.32.0";
 
-    public final String firefoxImage = "selenium/standalone-firefox:4.25.0";
+    public final String firefoxImage = "selenium/standalone-firefox:4.32.0";
 
-    public final String edgeImage = "selenium/standalone-edge:4.25.0";
+    public final String edgeImage = "selenium/standalone-edge:4.32.0";
 
     static {
         Startables.deepStart(

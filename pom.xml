@@ -162,7 +162,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-support</artifactId>
-            <version>4.26.0</version>
+            <version>4.33.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -170,7 +170,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-chrome-driver</artifactId>
-            <version>4.26.0</version>
+            <version>4.33.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -178,7 +178,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-firefox-driver</artifactId>
-            <version>4.26.0</version>
+            <version>4.33.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -186,7 +186,7 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-edge-driver</artifactId>
-            <version>4.26.0</version>
+            <version>4.33.0</version>
             <scope>test</scope>
         </dependency>
 
